@@ -20,7 +20,7 @@ export default function AboutPage() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from("about").select("*").single();
+      const { data } = await supabase.from("about").select("*").single() as any;
       if (data) {
         setRecordId(data.id);
         setCurrentAvatar(data.avatar_url);
