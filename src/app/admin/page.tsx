@@ -9,9 +9,9 @@ export default async function AdminPage() {
 
   const [{ count: projectCount }, { count: skillCount }, { data: recentProjects }] =
     await Promise.all([
-      supabase.from("projects").select("*", { count: "exact", head: true }),
-      supabase.from("skills").select("*", { count: "exact", head: true }),
-      supabase.from("projects").select("id,title,category,created_at").order("created_at", { ascending: false }).limit(5),
+      (supabase.from("projects") as any).select("*", { count: "exact", head: true }),
+      (supabase.from("skills") as any).select("*", { count: "exact", head: true }),
+      (supabase.from("projects") as any).select("id,title,category,created_at").order("created_at", { ascending: false }).limit(5),
     ]);
 
   const CAT_LABEL: Record<string, string> = {
@@ -63,7 +63,7 @@ export default async function AdminPage() {
             <Link href="/admin/projects" className="text-xs transition hover:opacity-70" style={{ color: "var(--muted)" }}>Lihat semua →</Link>
           </div>
           <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--border)" }}>
-            {recentProjects && recentProjects.length > 0 ? recentProjects.map((p, i) => (
+            {recentProjects && recentProjects.length > 0 ? recentProjects.map((p: any, i: number) => (
               <Link key={p.id} href={`/admin/projects/${p.id}`}
                 className="flex items-center justify-between px-5 py-4 transition hover:opacity-80"
                 style={{ background: "var(--bg-2)", borderBottom: i < recentProjects.length - 1 ? "1px solid var(--border)" : "none" }}>
