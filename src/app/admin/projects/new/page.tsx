@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
+import type { ProjectCategory } from "@/types/database";
 
 const CATEGORIES = [
   { value: "video_editing",  label: "Video Editing"   },
@@ -78,7 +79,7 @@ export default function NewProjectPage() {
       const { error: insertErr } = await supabase.from("projects").insert({
         title:        form.title,
         description:  form.description || null,
-        category:     form.category as never,
+        category:     form.category as ProjectCategory,
         tags,
         external_url: form.external_url || null,
         featured:     form.featured,
