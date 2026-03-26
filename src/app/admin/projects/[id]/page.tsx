@@ -32,7 +32,7 @@ export default function EditProjectPage() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from("projects").select("*").eq("id", id).single();
+      const { data } = await (supabase.from("projects") as any).select("*").eq("id", id).single();
       if (data) {
         setForm({
           title:        data.title,
