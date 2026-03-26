@@ -77,10 +77,10 @@ export default function AboutPage() {
       };
 
       if (recordId) {
-        const { error: e } = await supabase.from("about").update(payload).eq("id", recordId);
+        const { error: e } = await (supabase.from("about") as any).update(payload).eq("id", recordId);
         if (e) throw e;
       } else {
-        const { error: e } = await supabase.from("about").insert(payload);
+        const { error: e } = await (supabase.from("about") as any).insert(payload);
         if (e) throw e;
       }
 
