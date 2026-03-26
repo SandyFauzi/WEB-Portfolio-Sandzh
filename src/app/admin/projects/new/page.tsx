@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
-import type { ProjectCategory } from "@/types/database";
 
 const CATEGORIES = [
   { value: "video_editing",  label: "Video Editing"   },
@@ -76,16 +75,17 @@ export default function NewProjectPage() {
         .map((t) => t.trim())
         .filter(Boolean);
 
+      // KUNCI FIX: Menambahkan "as any" untuk mem-bypass bug tipe "never" dari Supabase
       const { error: insertErr } = await supabase.from("projects").insert({
         title:        form.title,
         description:  form.description || null,
-        category:     form.category as ProjectCategory,
+        category:     form.category,
         tags,
         external_url: form.external_url || null,
         featured:     form.featured,
         sort_order:   Number(form.sort_order),
         thumbnail_url,
-      });
+      } as any);
 
       if (insertErr) throw insertErr;
       router.push("/admin/projects");
