@@ -6,8 +6,8 @@ const CACHE_MINUTES = 60; // refresh setiap 1 jam
 export async function GET() {
   const supabase = createAdminClient();
 
-  // Cek cache dulu
-  const { data: cache } = await supabase
+  // Cek cache dulu - KITA PAKSA TIPENYA JADI ANY DI SINI
+  const { data: cache }: { data: any } = await supabase
     .from("coding_stats_cache")
     .select("*")
     .order("fetched_at", { ascending: false })
@@ -54,7 +54,8 @@ export async function GET() {
     range: summary.range ?? {},
   };
 
-  // Simpan ke cache
+  // Simpan ke cache - KITA TAMBAHKAN IGNORE AGAR TIDAK ERROR "NEVER" SAAT INSERT
+  // @ts-ignore
   await supabase.from("coding_stats_cache").insert({ data });
 
   return NextResponse.json(data);
