@@ -57,18 +57,25 @@ function isYouTubeUrl(url: string) {
 
 export default async function HomePage() {
   const supabase = createClient();
-  const [{ data: about }, { data: projects }, { data: skills }] = await Promise.all([
+  
+  // Pisahkan fetch dari destructuring untuk membersihkan type null dari Supabase
+  const [aboutRes, projectsRes, skillsRes] = await Promise.all([
     supabase.from("about").select("*").single(),
     supabase.from("projects").select("*").order("sort_order", { ascending: true }),
     supabase.from("skills").select("*").order("sort_order", { ascending: true }),
   ]);
+
+  // KUNCI FIX: Kita paksa tipe menjadi any dan berikan default value object kosong {}
+  const about: any = aboutRes.data || {};
+  const projects: any[] = projectsRes.data || [];
+  const skills: any[] = skillsRes.data || [];
 
   const name    = about?.full_name ?? "Sandy Fauzi Amrulloh";
   const tagline = about?.tagline   ?? "Video Editor · Graphic Design · 3D VFX Artist";
   const bio     = about?.bio       ?? "Freelance video editor dan graphic designer dengan background Fisika UNPAD dan Teknik Elektronika.";
   const socials = (about?.socials ?? {}) as Record<string, string>;
 
-  const grouped = (projects ?? []).reduce<Record<string, NonNullable<typeof projects>>>((acc, p) => {
+  const grouped = projects.reduce<Record<string, any[]>>((acc, p) => {
     if (!p) return acc;
     if (!acc[p.category]) acc[p.category] = [];
     acc[p.category].push(p);
@@ -113,7 +120,7 @@ export default async function HomePage() {
                 <Label>Available for freelance</Label>
               </div>
               <h1 className="fade-up-2 mb-5 text-[clamp(2.8rem,9vw,7rem)] font-extrabold leading-[0.88] tracking-tight">
-                {name.split(" ").map((w, i) => <span key={i} className="block">{w}</span>)}
+                {name.split(" ").map((w: string, i: number) => <span key={i} className="block">{w}</span>)}
               </h1>
               <p className="fade-up-3 mb-8 max-w-xs text-sm leading-relaxed text-muted">{tagline}</p>
               <div className="fade-up-4 flex flex-wrap items-center gap-4">
@@ -317,7 +324,7 @@ export default async function HomePage() {
                             )}
                             {p.tags?.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-1.5">
-                                {p.tags.map((tag) => (
+                                {p.tags.map((tag: string) => (
                                   <span key={tag} className="rounded-lg px-2 py-0.5 font-mono text-[10px] text-muted"
                                     style={{ background: "var(--bg-2)" }}>
                                     {tag}
