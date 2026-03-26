@@ -37,7 +37,7 @@ export default async function ProjectsPage() {
         {/* List */}
         <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--border)" }}>
           {projects && projects.length > 0 ? (
-            projects.map((p, i) => (
+            projects.map((p: any, i) => (
               <div
                 key={p.id}
                 className="flex items-center gap-4 px-5 py-4"
