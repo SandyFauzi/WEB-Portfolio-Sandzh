@@ -86,10 +86,10 @@ export default function EditProjectPage() {
 
       const tags = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
 
-      const { error: updateErr } = await supabase.from("projects").update({
+      const { error: updateErr } = await (supabase.from("projects") as any).update({
         title:         form.title,
         description:   form.description || null,
-        category:      form.category as never,
+        category:      form.category,
         tags,
         external_url:  form.external_url || null,
         featured:      form.featured,
