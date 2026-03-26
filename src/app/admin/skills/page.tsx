@@ -28,7 +28,7 @@ export default function SkillsPage() {
     await supabase.from("skills").update({
       name: skill.name, percentage: skill.percentage,
       category: skill.category, sort_order: skill.sort_order,
-    }).eq("id", skill.id);
+    } as any).eq("id", skill.id);
     setSaving(null);
   }
 
