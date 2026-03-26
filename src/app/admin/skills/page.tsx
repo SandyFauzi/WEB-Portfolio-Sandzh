@@ -25,10 +25,13 @@ export default function SkillsPage() {
 
   async function updateSkill(skill: Skill) {
     setSaving(skill.id);
+    
+    // @ts-ignore
     await supabase.from("skills").update({
       name: skill.name, percentage: skill.percentage,
       category: skill.category, sort_order: skill.sort_order,
-    } as any).eq("id", skill.id);
+    }).eq("id", skill.id);
+    
     setSaving(null);
   }
 
@@ -41,7 +44,10 @@ export default function SkillsPage() {
   async function addSkill() {
     if (!newSkill.name.trim()) return;
     setSaving("new");
+    
+    // @ts-ignore
     const { data } = await supabase.from("skills").insert(newSkill).select().single();
+    
     if (data) setSkills((prev) => [...prev, data]);
     setNewSkill({ name: "", percentage: 80, category: "creative", sort_order: 0 });
     setAdding(false);
