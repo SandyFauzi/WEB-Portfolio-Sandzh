@@ -79,17 +79,18 @@ export default async function HomePage() {
       {/* ── NAV ── */}
       <nav className="fixed top-0 z-50 w-full nav-blur border-b border-dim">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-12">
-          <span className="font-mono text-[11px] tracking-[0.18em] opacity-50">SANDZH</span>
+          
+          {/* Logo Dinamis (Theme Aware) */}
+          <div className="relative h-5 w-24 opacity-80 hover:opacity-100 transition-opacity">
+            {/* Muncul di Dark Mode */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/Sandzh White.png" alt="SANDZH" className="hidden dark:block h-full w-full object-contain object-left" />
+            
+            {/* Muncul di Light Mode */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/Sandzh Black.png" alt="SANDZH" className="block dark:hidden h-full w-full object-contain object-left" />
+           </div>
           <div className="flex items-center gap-5">
-            <ThemeToggle />
-            {["work","skills","about","contact"].map((s) => (
-              <a key={s} href={`#${s}`}
-                className="hidden font-mono text-[10px] uppercase tracking-[0.15em] text-muted transition hover:opacity-80 sm:block">
-                {s}
-              </a>
-            ))}
-          </div>
-        </div>
       </nav>
 
       {/* ── HERO ── */}
