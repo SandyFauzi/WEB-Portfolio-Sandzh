@@ -31,6 +31,7 @@ const DEFAULT_EDU = [
 type Tool = { name: string; abbr: string; color: string; bg: string; icon_url?: string; file?: File | null };
 type InfoObj = { label: string; value: string };
 type EduObj = { year: string; place: string; note: string };
+type ExpObj = { year: string; title: string; org: string; link: string; link_label: string };
 
 export default function AboutPage() {
   const supabase = useMemo(() => createClient(), []);
@@ -46,6 +47,7 @@ export default function AboutPage() {
   
   const [info, setInfo]               = useState<InfoObj[]>([]);
   const [education, setEducation]     = useState<EduObj[]>([]);
+  const [experience, setExperience]   = useState<ExpObj[]>([]); // State baru untuk Organisasi
 
   const [avatarFile, setAvatarFile]   = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
@@ -62,8 +64,6 @@ export default function AboutPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data } = await (supabase.from("about").select("*").single() as any);
       
-      // Jika data ADA di database, kita pakai data database.
-      // Jika kosong/tidak ada, kita pakai nilai DEFAULT.
       if (data) {
         setRecordId(data.id);
         setCurrentAvatar(data.avatar_url ?? null);
@@ -75,15 +75,15 @@ export default function AboutPage() {
           tiktok: s.tiktok ?? "", whatsapp: s.whatsapp ?? "",
         });
         
-        // Cek satu-satu: Kalau di database ada array-nya dan isinya > 0, pakai itu. Kalau tidak, pakai DEFAULT.
         setTools(s.tools && Array.isArray(s.tools) && s.tools.length > 0 ? s.tools : DEFAULT_TOOLS);
         setInfo(s.info && Array.isArray(s.info) && s.info.length > 0 ? s.info : DEFAULT_INFO);
         setEducation(s.education && Array.isArray(s.education) && s.education.length > 0 ? s.education : DEFAULT_EDU);
+        setExperience(s.experience && Array.isArray(s.experience) ? s.experience : []);
       } else {
-         // Jika tabel about benar-benar kosong melompong
          setTools(DEFAULT_TOOLS);
          setInfo(DEFAULT_INFO);
          setEducation(DEFAULT_EDU);
+         setExperience([]);
       }
       setLoading(false);
     }
@@ -128,6 +128,15 @@ export default function AboutPage() {
     setEducation(newEdu);
   }
 
+  // Experience Helpers
+  function addExp() { setExperience([...experience, { year: "", title: "", org: "", link: "", link_label: "" }]); }
+  function removeExp(idx: number) { setExperience(experience.filter((_, i) => i !== idx)); }
+  function updateExp(idx: number, field: keyof ExpObj, val: string) {
+    const newExp = [...experience];
+    newExp[idx] = { ...newExp[idx], [field]: val };
+    setExperience(newExp);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -135,7 +144,6 @@ export default function AboutPage() {
     setSuccess(false);
 
     try {
-      // 1. Upload Avatar
       let avatar_url = currentAvatar;
       if (avatarFile) {
         const ext  = avatarFile.name.split(".").pop();
@@ -146,7 +154,6 @@ export default function AboutPage() {
         avatar_url = urlData.publicUrl;
       }
 
-      // 2. Upload Tool Icons
       const finalTools = await Promise.all(tools.map(async (t) => {
         let icon_url = t.icon_url;
         if (t.file) {
@@ -167,7 +174,7 @@ export default function AboutPage() {
         socials: {
           instagram: form.instagram, github: form.github,
           tiktok: form.tiktok, whatsapp: form.whatsapp,
-          info, education, tools: finalTools,
+          info, education, experience, tools: finalTools, // <--- Experience masuk ke sini
         },
       };
 
@@ -176,7 +183,6 @@ export default function AboutPage() {
       const { error: err } = recordId ? await db.update(payload).eq("id", recordId) : await db.insert(payload);
       if (err) throw err;
 
-      // Update local state after saving
       setTools(finalTools);
       setAvatarFile(null);
       setAvatarPreview("");
@@ -277,6 +283,29 @@ export default function AboutPage() {
             <button type="button" onClick={addEdu} className="text-xs transition hover:opacity-70" style={{ color: "var(--muted)" }}>＋ Tambah Pendidikan Baru</button>
           </Card>
 
+          {/* PENGALAMAN ORGANISASI & KEPANITIAAN (BARU) */}
+          <Card label="Pengalaman Organisasi & Kepanitiaan">
+            <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>Daftar organisasi dan event beserta link hasil kerjanya.</p>
+            {experience.map((item, i) => (
+              <div key={i} className="mb-4 rounded-xl p-4 space-y-3" style={{ background: "var(--bg-3)", border: "1px solid var(--border)" }}>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[10px] uppercase" style={{ color: "var(--muted)" }}>Item #{i+1}</span>
+                  <button type="button" onClick={() => removeExp(i)} className="text-red-500 hover:text-red-400 text-xs">✕ Hapus</button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input className="input-field" placeholder="Tahun (ex: 2023 - 2024)" value={item.year} onChange={e => updateExp(i, 'year', e.target.value)} />
+                  <input className="input-field" placeholder="Peran / Acara (ex: Ketua Div. PDD)" value={item.title} onChange={e => updateExp(i, 'title', e.target.value)} />
+                  <input className="input-field sm:col-span-2" placeholder="Nama Organisasi (ex: BEM Kema Unpad)" value={item.org} onChange={e => updateExp(i, 'org', e.target.value)} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2" style={{ borderTop: "1px dashed var(--border)" }}>
+                   <input className="input-field" placeholder="Label Link (ex: Lihat Aftermovie)" value={item.link_label} onChange={e => updateExp(i, 'link_label', e.target.value)} />
+                   <input className="input-field" placeholder="URL Link (ex: https://...)" value={item.link} onChange={e => updateExp(i, 'link', e.target.value)} />
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={addExp} className="text-xs transition hover:opacity-70" style={{ color: "var(--muted)" }}>＋ Tambah Pengalaman Baru</button>
+          </Card>
+
           {/* KONTAK & SOSMED */}
           <Card label="Kontak & Social Media">
             <div className="grid grid-cols-2 gap-3">
@@ -322,7 +351,6 @@ export default function AboutPage() {
               ))}
             </div>
 
-            {/* Form tambah tool */}
             {showAddTool ? (
               <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-3)", border: "1px solid var(--border)" }}>
                 <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Software baru</p>
@@ -371,7 +399,6 @@ export default function AboutPage() {
   );
 }
 
-// ── Helpers ──────────────────────────────────────────────────────
 function Card({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-4 rounded-2xl p-5" style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
