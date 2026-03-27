@@ -52,7 +52,8 @@ export default async function HomePage() {
     ? socials.tools as { name: string; abbr: string; color: string; bg: string }[]
     : DEFAULT_SOFTWARE;
 
-  const grouped = (projects ?? []).reduce<Record<string, NonNullable<typeof projects>>>((acc, p) => {
+// Gunakan 'any' pada type assertion untuk menghindari error "untyped function calls"
+  const grouped = projects.reduce((acc: Record<string, any[]>, p: any) => {
     if (!p) return acc;
     if (!acc[p.category]) acc[p.category] = [];
     acc[p.category].push(p);
