@@ -14,6 +14,20 @@ const DEFAULT_TOOLS = [
   { name: "Arduino",       abbr: "Ar", color: "#00979D", bg: "#001a1b" },
 ];
 
+const DEFAULT_INFO = [
+  { label: "Universitas", value: "UNPAD" },
+  { label: "Jurusan",     value: "Fisika" },
+  { label: "Fokus",       value: "Creative Tech" },
+  { label: "Status",      value: "Freelance" },
+];
+
+const DEFAULT_EDU = [
+  { year: "2024 –",      place: "Universitas Padjadjaran", note: "S1 Fisika" },
+  { year: "2021 – 24",   place: "SMKN 1 Sumedang",        note: "Teknik Elektronika" },
+  { year: "2018 – 21",   place: "SMPN 1 Sumedang",        note: "" },
+  { year: "2012 – 18",   place: "SD Sukamaju",             note: "" },
+];
+
 type Tool = { name: string; abbr: string; color: string; bg: string; icon_url?: string; file?: File | null };
 type InfoObj = { label: string; value: string };
 type EduObj = { year: string; place: string; note: string };
@@ -26,7 +40,7 @@ export default function AboutPage() {
     instagram: "", github: "", tiktok: "", whatsapp: "",
   });
   
-  const [tools, setTools]             = useState<Tool[]>(DEFAULT_TOOLS);
+  const [tools, setTools]             = useState<Tool[]>([]);
   const [newTool, setNewTool]         = useState<Tool>({ name: "", abbr: "", color: "#ffffff", bg: "#111111" });
   const [showAddTool, setShowAddTool] = useState(false);
   
@@ -47,6 +61,9 @@ export default function AboutPage() {
     async function load() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data } = await (supabase.from("about").select("*").single() as any);
+      
+      // Jika data ADA di database, kita pakai data database.
+      // Jika kosong/tidak ada, kita pakai nilai DEFAULT.
       if (data) {
         setRecordId(data.id);
         setCurrentAvatar(data.avatar_url ?? null);
@@ -58,9 +75,15 @@ export default function AboutPage() {
           tiktok: s.tiktok ?? "", whatsapp: s.whatsapp ?? "",
         });
         
-        if (s.tools && Array.isArray(s.tools) && s.tools.length > 0) setTools(s.tools);
-        if (s.info && Array.isArray(s.info)) setInfo(s.info);
-        if (s.education && Array.isArray(s.education)) setEducation(s.education);
+        // Cek satu-satu: Kalau di database ada array-nya dan isinya > 0, pakai itu. Kalau tidak, pakai DEFAULT.
+        setTools(s.tools && Array.isArray(s.tools) && s.tools.length > 0 ? s.tools : DEFAULT_TOOLS);
+        setInfo(s.info && Array.isArray(s.info) && s.info.length > 0 ? s.info : DEFAULT_INFO);
+        setEducation(s.education && Array.isArray(s.education) && s.education.length > 0 ? s.education : DEFAULT_EDU);
+      } else {
+         // Jika tabel about benar-benar kosong melompong
+         setTools(DEFAULT_TOOLS);
+         setInfo(DEFAULT_INFO);
+         setEducation(DEFAULT_EDU);
       }
       setLoading(false);
     }
