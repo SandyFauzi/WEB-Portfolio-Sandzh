@@ -77,3 +77,8 @@ body {
 .input-field:focus { border-color: var(--border-hover); }
 .input-field::placeholder { color: var(--muted); opacity: 0.7; }
 select.input-field option { background: var(--bg-2); color: var(--text); }
+
+/* --- Trik Membalik Warna Logo di Dark Mode --- */
+[data-theme="dark"] .theme-logo {
+  filter: invert(1) brightness(2);
+}
