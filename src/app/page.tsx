@@ -26,6 +26,11 @@ const DEFAULT_SOFTWARE = [
   { name: "Arduino",       abbr: "Ar", color: "#00979D", bg: "#001a1b" },
 ];
 
+const DEFAULT_EXP = [
+  { year: "2023 - 2024", title: "Ketua Divisi PDD", org: "BEM Kema UNPAD", link_label: "Lihat Aftermovie", link: "#" },
+  { year: "2022", title: "Staff Dekorasi & Dokumentasi", org: "Kepanitiaan Fakultas", link_label: "Poster Project", link: "#" },
+];
+
 function isYouTubeUrl(url: string) {
   return url.includes("youtube.com") || url.includes("youtu.be");
 }
@@ -48,7 +53,6 @@ export default async function HomePage() {
   
   const socials = (about?.socials ?? {}) as any;
 
-  // Render Dinamis untuk Education & Info
   const infoArray = (Array.isArray(socials.info) && socials.info.length > 0) ? socials.info : [
     { label: "Universitas", value: "UNPAD" },
     { label: "Jurusan",     value: "Fisika" },
@@ -64,6 +68,8 @@ export default async function HomePage() {
   ];
 
   const software = (Array.isArray(socials.tools) && socials.tools.length > 0) ? socials.tools : DEFAULT_SOFTWARE;
+  
+  const expArray = (Array.isArray(socials.experience) && socials.experience.length > 0) ? socials.experience : DEFAULT_EXP;
 
   const grouped = projects.reduce((acc: Record<string, any[]>, p: any) => {
     if (!p) return acc;
@@ -74,14 +80,13 @@ export default async function HomePage() {
 
   const marqueeItems = ["Video Editing","3D VFX","Graphic Design","Physics","Blender","After Effects","Premiere Pro","Illustrator","Arduino","Python","Fisika UNPAD"];
 
-return (
+  return (
     <main className="min-h-screen">
       {/* ── NAV ── */}
       <nav className="fixed top-0 z-50 w-full nav-blur border-b border-dim">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-12">
           
-          {/* Logo (Bisa di-scale dengan persentase) */}
-          <div className="h-6 w-28 md:h-7 md:w-32 opacity-90 transition-opacity hover:opacity-100 origin-left scale-[3]">
+          <div className="h-6 w-28 md:h-7 md:w-32 opacity-90 transition-opacity hover:opacity-100 origin-left scale-[1.2]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/Sandzh Black.png" 
@@ -92,7 +97,7 @@ return (
 
           <div className="flex items-center gap-5">
             <ThemeToggle />
-            {["work","skills","about","contact"].map((s) => (
+            {["about","experience","skills","work","contact"].map((s) => (
               <a key={s} href={`#${s}`}
                 className="hidden font-mono text-[10px] uppercase tracking-[0.15em] text-muted transition hover:opacity-80 sm:block">
                 {s}
@@ -104,7 +109,6 @@ return (
 
       {/* ── HERO ── */}
       <section className="relative flex min-h-screen flex-col justify-end px-6 pb-16 pt-28 md:px-12">
-        {/* Subtle grid */}
         <div className="pointer-events-none absolute inset-0 opacity-[0.035]"
           style={{
             backgroundImage: "linear-gradient(var(--text) 1px,transparent 1px),linear-gradient(90deg,var(--text) 1px,transparent 1px)",
@@ -113,7 +117,6 @@ return (
 
         <div className="relative mx-auto w-full max-w-6xl">
           <div className="grid grid-cols-1 items-end gap-12 md:grid-cols-2">
-            {/* Left — text */}
             <div>
               <div className="fade-up mb-4 flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "var(--text)", opacity: 0.5 }} />
@@ -133,10 +136,8 @@ return (
               </div>
             </div>
 
-            {/* Right — foto profil */}
             <div className="fade-up-2 flex justify-center md:justify-end">
               <div className="relative">
-                {/* Frame dekoratif */}
                 <div className="absolute -right-3 -top-3 h-full w-full rounded-2xl border-dim" />
                 <div className="relative h-72 w-56 overflow-hidden rounded-2xl md:h-80 md:w-64"
                   style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
@@ -150,7 +151,6 @@ return (
                     </div>
                   )}
                 </div>
-                {/* Badge bawah */}
                 <div className="absolute -bottom-4 left-4 rounded-xl px-3 py-2 text-xs font-medium border-dim"
                   style={{ background: "var(--card-bg)" }}>
                   <Label>Sumedang, ID</Label>
@@ -184,8 +184,6 @@ return (
               <div key={i}
                 className="group flex items-center gap-2.5 rounded-xl px-4 py-2.5 transition hover:scale-105"
                 style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
-                
-                {/* Icon badge - Mendukung Image Upload */}
                 <div className="flex h-7 w-7 shrink-0 overflow-hidden items-center justify-center rounded-lg text-[11px] font-bold"
                   style={{ background: s.icon_url ? "transparent" : s.bg, color: s.color }}>
                   {s.icon_url ? (
@@ -195,7 +193,6 @@ return (
                     s.abbr
                   )}
                 </div>
-
                 <span className="text-sm font-medium">{s.name}</span>
               </div>
             ))}
@@ -217,7 +214,6 @@ return (
               <h2 className="mb-5 text-4xl font-bold leading-tight">Fisika &<br />Kreativitas</h2>
               <p className="leading-relaxed text-muted">{bio}</p>
               
-              {/* Render Info Dinamis */}
               <div className="mt-8 grid grid-cols-2 gap-3">
                 {infoArray.map((item: any, idx: number) => (
                   <div key={idx} className="rounded-xl p-4 border-dim bg-card">
@@ -231,7 +227,6 @@ return (
             <div>
               <Label>Pendidikan</Label>
               <div className="mt-5">
-                {/* Render Pendidikan Dinamis */}
                 {eduArray.map((e: any, i: number) => (
                   <div key={i} className="flex gap-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
                     <span className="w-20 shrink-0 font-mono text-xs text-muted">{e.year}</span>
@@ -249,11 +244,46 @@ return (
 
       <Divider />
 
+      {/* ── EXPERIENCE & ORGANISATIONS (BARU) ── */}
+      <section id="experience" className="px-6 py-20 md:px-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-10 flex items-center gap-4">
+            <Label>003 / Experience</Label>
+            <div className="h-px flex-1" style={{ background: "var(--border)" }} />
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {expArray.map((exp: any, i: number) => (
+              <div key={i} className="group relative flex flex-col justify-between rounded-2xl p-6 transition-all hover:bg-[var(--bg-2)]" style={{ border: "1px solid var(--border)" }}>
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
+                    <Label>{exp.year}</Label>
+                    <span className="font-mono text-[10px] text-muted opacity-30 group-hover:opacity-100 transition-opacity">SYS.LOG</span>
+                  </div>
+                  <h3 className="mb-1 text-lg font-bold leading-tight">{exp.title}</h3>
+                  <p className="text-sm text-muted mb-6">{exp.org}</p>
+                </div>
+                
+                {exp.link && (
+                  <div>
+                    <a href={exp.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest transition hover:opacity-70" style={{ borderBottom: "1px dashed var(--border)" }}>
+                      <span className="text-muted">[{exp.link_label || 'View Project'}]</span> ↗
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Divider />
+
       {/* ── SKILLS ── */}
       <section id="skills" className="px-6 py-20 md:px-12">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 flex items-center gap-4">
-            <Label>003 / Skills</Label>
+            <Label>004 / Skills</Label>
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
           <div>
@@ -277,7 +307,7 @@ return (
       <section id="work" className="px-6 py-20 md:px-12">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 flex items-center gap-4">
-            <Label>004 / Work</Label>
+            <Label>005 / Work</Label>
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
 
@@ -302,7 +332,6 @@ return (
                       const hasDrive = !!p.gdrive_url;
                       return (
                         <div key={p.id} className="group overflow-hidden rounded-2xl bg-card border-dim transition hover:border-dim-hover">
-                          {/* Media — YouTube embed atau thumbnail */}
                           {hasYT ? (
                             <YouTubeEmbed url={p.external_url!} title={p.title} />
                           ) : p.thumbnail_url ? (
@@ -317,7 +346,6 @@ return (
                             </div>
                           )}
 
-                          {/* Info */}
                           <div className="p-4">
                             <h3 className="font-bold leading-tight">{p.title}</h3>
                             {p.description && (
@@ -334,7 +362,6 @@ return (
                               </div>
                             )}
 
-                            {/* Action buttons */}
                             {(hasDrive || (p.external_url && !hasYT)) && (
                               <div className="mt-4 flex gap-2">
                                 {hasDrive && (
@@ -371,7 +398,7 @@ return (
       <section className="px-6 py-20 md:px-12">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 flex items-center gap-4">
-            <Label>005 / Coding hours</Label>
+            <Label>006 / Coding hours</Label>
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
           <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
@@ -388,11 +415,11 @@ return (
 
       <Divider />
 
-{/* ── CONTACT ── */}
+      {/* ── CONTACT ── */}
       <section id="contact" className="px-6 py-20 md:px-12">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 flex items-center gap-4">
-            <Label>006 / Contact</Label>
+            <Label>007 / Contact</Label>
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
           <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
@@ -434,7 +461,6 @@ return (
                   style={{ borderBottom: "1px solid var(--border)" }}>
                   
                   <div className="flex items-center gap-5">
-                    {/* Wadah Icon - Efek Invert saat di-hover */}
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-300 group-hover:scale-110"
                       style={{ border: "1px solid var(--border)", background: "var(--bg-2)" }}>
                       <div className="opacity-70 group-hover:opacity-100 transition-opacity">
