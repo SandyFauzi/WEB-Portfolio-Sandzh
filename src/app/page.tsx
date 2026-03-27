@@ -388,7 +388,7 @@ return (
 
       <Divider />
 
-      {/* ── CONTACT ── */}
+{/* ── CONTACT ── */}
       <section id="contact" className="px-6 py-20 md:px-12">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 flex items-center gap-4">
@@ -404,19 +404,51 @@ return (
             </div>
             <div>
               {[
-                { label: "Email",     value: about?.email ?? "sandyfauzia09@gmail.com", href: `mailto:${about?.email ?? "sandyfauzia09@gmail.com"}` },
-                { label: "Instagram", value: `@${String(socials.instagram ?? "sandzh_")}`,      href: `https://instagram.com/${String(socials.instagram ?? "sandzh_")}` },
-                { label: "GitHub",    value: String(socials.github ?? "SandzhNine"),             href: `https://github.com/${String(socials.github ?? "SandzhNine")}` },
-                { label: "WhatsApp",  value: String(socials.whatsapp ?? "+62 812-9571-0325"),    href: `http://wa.me/${String(socials.whatsapp ?? "+6281295710325")}` },
+                { 
+                  label: "Email",     
+                  value: about?.email ?? "sandyfauzia09@gmail.com", 
+                  href: `mailto:${about?.email ?? "sandyfauzia09@gmail.com"}`,
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                },
+                { 
+                  label: "Instagram", 
+                  value: `@${String(socials.instagram ?? "sandzh_")}`,      
+                  href: `https://instagram.com/${String(socials.instagram ?? "sandzh_")}`,
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                },
+                { 
+                  label: "GitHub",    
+                  value: String(socials.github ?? "SandzhNine"),             
+                  href: `https://github.com/${String(socials.github ?? "SandzhNine")}`,
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3-.3 6-1.5 6-6.5a5.4 5.4 0 0 0-1.5-3.8 5.4 5.4 0 0 0 .1-3.8s-1.2-.4-3.9 1.7a13.9 13.9 0 0 0-7 0C3.9 2.7 2.7 3.1 2.7 3.1a5.4 5.4 0 0 0 .1 3.8A5.4 5.4 0 0 0 1 10.5c0 5 3 6.2 6 6.5a4.8 4.8 0 0 0-1 3.2v4"/><path d="M9 18c-4.5 1.2-5-2.5-7-3"/></svg>
+                },
+                { 
+                  label: "WhatsApp",  
+                  value: String(socials.whatsapp ?? "+62 812-9571-0325"),    
+                  href: `http://wa.me/${String(socials.whatsapp ?? "+6281295710325").replace(/[^0-9+]/g, '')}`,
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>
+                },
               ].map((c) => (
                 <a key={c.label} href={c.href} target="_blank" rel="noreferrer"
-                  className="group flex items-center justify-between py-5 transition hover:opacity-70"
+                  className="group flex items-center justify-between py-4 transition hover:opacity-100 opacity-80"
                   style={{ borderBottom: "1px solid var(--border)" }}>
-                  <div>
-                    <Label>{c.label}</Label>
-                    <p className="mt-0.5 font-semibold">{c.value}</p>
+                  
+                  <div className="flex items-center gap-5">
+                    {/* Wadah Icon - Efek Invert saat di-hover */}
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-300 group-hover:scale-110"
+                      style={{ border: "1px solid var(--border)", background: "var(--bg-2)" }}>
+                      <div className="opacity-70 group-hover:opacity-100 transition-opacity">
+                        {c.icon}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label>{c.label}</Label>
+                      <p className="mt-0.5 font-semibold transition-transform group-hover:translate-x-1">{c.value}</p>
+                    </div>
                   </div>
-                  <span className="text-muted transition group-hover:translate-x-1">→</span>
+                  
+                  <span className="text-muted transition-all group-hover:translate-x-2 group-hover:opacity-100 opacity-40 font-mono">↗</span>
                 </a>
               ))}
             </div>
