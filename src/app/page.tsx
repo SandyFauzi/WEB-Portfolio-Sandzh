@@ -16,39 +16,15 @@ const CAT_LABEL: Record<string, string> = {
 };
 
 // Software icons SVG paths (simplified brand-accurate)
-const SOFTWARE = [
-  {
-    name: "Premiere Pro", abbr: "Pr", color: "#9999FF",
-    bg: "#0a0a1e",
-  },
-  {
-    name: "After Effects", abbr: "Ae", color: "#9999FF",
-    bg: "#0d0a1a",
-  },
-  {
-    name: "Illustrator", abbr: "Ai", color: "#FF9A00",
-    bg: "#1a0f00",
-  },
-  {
-    name: "Photoshop", abbr: "Ps", color: "#31A8FF",
-    bg: "#001219",
-  },
-  {
-    name: "Blender", abbr: "Bl", color: "#E87D0D",
-    bg: "#1a0e00",
-  },
-  {
-    name: "VS Code", abbr: "VS", color: "#007ACC",
-    bg: "#001525",
-  },
-  {
-    name: "Python", abbr: "Py", color: "#FFD43B",
-    bg: "#1a1500",
-  },
-  {
-    name: "Arduino", abbr: "Ar", color: "#00979D",
-    bg: "#001a1b",
-  },
+const DEFAULT_SOFTWARE = [
+  { name: "Premiere Pro", abbr: "Pr", color: "#9999FF", bg: "#0a0a1e" },
+  { name: "After Effects", abbr: "Ae", color: "#9999FF", bg: "#0d0a1a" },
+  { name: "Illustrator",   abbr: "Ai", color: "#FF9A00", bg: "#1a0f00" },
+  { name: "Photoshop",     abbr: "Ps", color: "#31A8FF", bg: "#001219" },
+  { name: "Blender",       abbr: "Bl", color: "#E87D0D", bg: "#1a0e00" },
+  { name: "VS Code",       abbr: "VS", color: "#007ACC", bg: "#001525" },
+  { name: "Python",        abbr: "Py", color: "#FFD43B", bg: "#1a1500" },
+  { name: "Arduino",       abbr: "Ar", color: "#00979D", bg: "#001a1b" },
 ];
 
 function isYouTubeUrl(url: string) {
@@ -57,25 +33,21 @@ function isYouTubeUrl(url: string) {
 
 export default async function HomePage() {
   const supabase = createClient();
-  
-  // Pisahkan fetch dari destructuring untuk membersihkan type null dari Supabase
-  const [aboutRes, projectsRes, skillsRes] = await Promise.all([
+  const [{ data: about }, { data: projects }, { data: skills }] = await Promise.all([
     supabase.from("about").select("*").single(),
     supabase.from("projects").select("*").order("sort_order", { ascending: true }),
     supabase.from("skills").select("*").order("sort_order", { ascending: true }),
   ]);
 
-  // KUNCI FIX: Kita paksa tipe menjadi any dan berikan default value object kosong {}
-  const about: any = aboutRes.data || {};
-  const projects: any[] = projectsRes.data || [];
-  const skills: any[] = skillsRes.data || [];
-
   const name    = about?.full_name ?? "Sandy Fauzi Amrulloh";
   const tagline = about?.tagline   ?? "Video Editor · Graphic Design · 3D VFX Artist";
   const bio     = about?.bio       ?? "Freelance video editor dan graphic designer dengan background Fisika UNPAD dan Teknik Elektronika.";
-  const socials = (about?.socials ?? {}) as Record<string, string>;
+  const socials  = (about?.socials ?? {}) as Record<string, unknown>;
+  const software = (Array.isArray(socials.tools) && (socials.tools as unknown[]).length > 0)
+    ? socials.tools as { name: string; abbr: string; color: string; bg: string }[]
+    : DEFAULT_SOFTWARE;
 
-  const grouped = projects.reduce<Record<string, any[]>>((acc, p) => {
+  const grouped = (projects ?? []).reduce<Record<string, NonNullable<typeof projects>>>((acc, p) => {
     if (!p) return acc;
     if (!acc[p.category]) acc[p.category] = [];
     acc[p.category].push(p);
@@ -120,7 +92,7 @@ export default async function HomePage() {
                 <Label>Available for freelance</Label>
               </div>
               <h1 className="fade-up-2 mb-5 text-[clamp(2.8rem,9vw,7rem)] font-extrabold leading-[0.88] tracking-tight">
-                {name.split(" ").map((w: string, i: number) => <span key={i} className="block">{w}</span>)}
+                {name.split(" ").map((w, i) => <span key={i} className="block">{w}</span>)}
               </h1>
               <p className="fade-up-3 mb-8 max-w-xs text-sm leading-relaxed text-muted">{tagline}</p>
               <div className="fade-up-4 flex flex-wrap items-center gap-4">
@@ -180,7 +152,7 @@ export default async function HomePage() {
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
           <div className="flex flex-wrap gap-3">
-            {SOFTWARE.map((s) => (
+            {software.map((s) => (
               <div key={s.name}
                 className="group flex items-center gap-2.5 rounded-xl px-4 py-2.5 transition hover:scale-105"
                 style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
@@ -324,7 +296,7 @@ export default async function HomePage() {
                             )}
                             {p.tags?.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-1.5">
-                                {p.tags.map((tag: string) => (
+                                {p.tags.map((tag) => (
                                   <span key={tag} className="rounded-lg px-2 py-0.5 font-mono text-[10px] text-muted"
                                     style={{ background: "var(--bg-2)" }}>
                                     {tag}
@@ -405,9 +377,9 @@ export default async function HomePage() {
             <div>
               {[
                 { label: "Email",     value: about?.email ?? "sandyfauzia09@gmail.com", href: `mailto:${about?.email ?? "sandyfauzia09@gmail.com"}` },
-                { label: "Instagram", value: `@${socials.instagram ?? "sandzh_"}`,      href: `https://instagram.com/${socials.instagram ?? "sandzh_"}` },
-                { label: "GitHub",    value: socials.github ?? "SandzhNine",             href: `https://github.com/${socials.github ?? "SandzhNine"}` },
-                { label: "WhatsApp",  value: socials.whatsapp ?? "+62 812-9571-0325",    href: `http://wa.me/${socials.whatsapp ?? "+6281295710325"}` },
+                { label: "Instagram", value: `@${String(socials.instagram ?? "sandzh_")}`,      href: `https://instagram.com/${String(socials.instagram ?? "sandzh_")}` },
+                { label: "GitHub",    value: String(socials.github ?? "SandzhNine"),             href: `https://github.com/${String(socials.github ?? "SandzhNine")}` },
+                { label: "WhatsApp",  value: String(socials.whatsapp ?? "+62 812-9571-0325"),    href: `http://wa.me/${String(socials.whatsapp ?? "+6281295710325")}` },
               ].map((c) => (
                 <a key={c.label} href={c.href} target="_blank" rel="noreferrer"
                   className="group flex items-center justify-between py-5 transition hover:opacity-70"
