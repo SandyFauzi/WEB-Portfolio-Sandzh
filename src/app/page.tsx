@@ -81,7 +81,7 @@ return (
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-12">
           
           {/* Logo (Bisa di-scale dengan persentase) */}
-          <div className="h-6 w-28 md:h-7 md:w-32 opacity-90 transition-opacity hover:opacity-100 origin-left scale-[5]">
+          <div className="h-6 w-28 md:h-7 md:w-32 opacity-90 transition-opacity hover:opacity-100 origin-left scale-[3]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/Sandzh Black.png" 
