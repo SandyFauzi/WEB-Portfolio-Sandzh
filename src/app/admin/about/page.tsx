@@ -14,22 +14,29 @@ const DEFAULT_TOOLS = [
   { name: "Arduino",       abbr: "Ar", color: "#00979D", bg: "#001a1b" },
 ];
 
-type Tool = { name: string; abbr: string; color: string; bg: string };
+type Tool = { name: string; abbr: string; color: string; bg: string; icon_url?: string; file?: File | null };
+type InfoObj = { label: string; value: string };
+type EduObj = { year: string; place: string; note: string };
 
 export default function AboutPage() {
-  // FIX utama: useMemo supaya supabase client tidak dibuat ulang tiap render
   const supabase = useMemo(() => createClient(), []);
 
   const [form, setForm] = useState({
     full_name: "", tagline: "", bio: "", email: "", phone: "",
     instagram: "", github: "", tiktok: "", whatsapp: "",
   });
+  
   const [tools, setTools]             = useState<Tool[]>(DEFAULT_TOOLS);
   const [newTool, setNewTool]         = useState<Tool>({ name: "", abbr: "", color: "#ffffff", bg: "#111111" });
   const [showAddTool, setShowAddTool] = useState(false);
+  
+  const [info, setInfo]               = useState<InfoObj[]>([]);
+  const [education, setEducation]     = useState<EduObj[]>([]);
+
   const [avatarFile, setAvatarFile]   = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
   const [success, setSuccess] = useState(false);
@@ -50,9 +57,10 @@ export default function AboutPage() {
           instagram: s.instagram ?? "", github: s.github ?? "",
           tiktok: s.tiktok ?? "", whatsapp: s.whatsapp ?? "",
         });
-        if (s.tools && Array.isArray(s.tools) && s.tools.length > 0) {
-          setTools(s.tools);
-        }
+        
+        if (s.tools && Array.isArray(s.tools) && s.tools.length > 0) setTools(s.tools);
+        if (s.info && Array.isArray(s.info)) setInfo(s.info);
+        if (s.education && Array.isArray(s.education)) setEducation(s.education);
       }
       setLoading(false);
     }
@@ -70,15 +78,31 @@ export default function AboutPage() {
     setAvatarPreview(URL.createObjectURL(file));
   }
 
-  function removeTool(index: number) {
-    setTools((prev) => prev.filter((_, i) => i !== index));
-  }
-
+  // Tools Helpers
+  function removeTool(index: number) { setTools((prev) => prev.filter((_, i) => i !== index)); }
   function addTool() {
     if (!newTool.name.trim() || !newTool.abbr.trim()) return;
     setTools((prev) => [...prev, newTool]);
-    setNewTool({ name: "", abbr: "", color: "#ffffff", bg: "#111111" });
+    setNewTool({ name: "", abbr: "", color: "#ffffff", bg: "#111111", file: null });
     setShowAddTool(false);
+  }
+
+  // Info Helpers
+  function addInfo() { setInfo([...info, { label: "", value: "" }]); }
+  function removeInfo(idx: number) { setInfo(info.filter((_, i) => i !== idx)); }
+  function updateInfo(idx: number, field: keyof InfoObj, val: string) {
+    const newInfo = [...info];
+    newInfo[idx] = { ...newInfo[idx], [field]: val };
+    setInfo(newInfo);
+  }
+
+  // Education Helpers
+  function addEdu() { setEducation([...education, { year: "", place: "", note: "" }]); }
+  function removeEdu(idx: number) { setEducation(education.filter((_, i) => i !== idx)); }
+  function updateEdu(idx: number, field: keyof EduObj, val: string) {
+    const newEdu = [...education];
+    newEdu[idx] = { ...newEdu[idx], [field]: val };
+    setEducation(newEdu);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -88,17 +112,31 @@ export default function AboutPage() {
     setSuccess(false);
 
     try {
+      // 1. Upload Avatar
       let avatar_url = currentAvatar;
       if (avatarFile) {
         const ext  = avatarFile.name.split(".").pop();
-        const path = `avatars/avatar.${ext}`;
-        const { error: uploadErr } = await supabase.storage
-          .from("portfolio-media")
-          .upload(path, avatarFile, { upsert: true });
+        const path = `avatars/${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage.from("portfolio-media").upload(path, avatarFile, { upsert: true });
         if (uploadErr) throw uploadErr;
         const { data: urlData } = supabase.storage.from("portfolio-media").getPublicUrl(path);
         avatar_url = urlData.publicUrl;
       }
+
+      // 2. Upload Tool Icons
+      const finalTools = await Promise.all(tools.map(async (t) => {
+        let icon_url = t.icon_url;
+        if (t.file) {
+          const ext = t.file.name.split(".").pop();
+          const path = `icons/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+          const { error: uploadErr } = await supabase.storage.from("portfolio-media").upload(path, t.file, { upsert: true });
+          if (!uploadErr) {
+            const { data: urlData } = supabase.storage.from("portfolio-media").getPublicUrl(path);
+            icon_url = urlData.publicUrl;
+          }
+        }
+        return { name: t.name, abbr: t.abbr, color: t.color, bg: t.bg, icon_url };
+      }));
 
       const payload = {
         full_name: form.full_name, tagline: form.tagline, bio: form.bio,
@@ -106,16 +144,20 @@ export default function AboutPage() {
         socials: {
           instagram: form.instagram, github: form.github,
           tiktok: form.tiktok, whatsapp: form.whatsapp,
-          tools, // disimpan di sini
+          info, education, tools: finalTools,
         },
       };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const db = supabase.from("about") as any;
-      const { error: err } = recordId
-        ? await db.update(payload).eq("id", recordId)
-        : await db.insert(payload);
+      const { error: err } = recordId ? await db.update(payload).eq("id", recordId) : await db.insert(payload);
       if (err) throw err;
+
+      // Update local state after saving
+      setTools(finalTools);
+      setAvatarFile(null);
+      setAvatarPreview("");
+      setCurrentAvatar(avatar_url);
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -175,66 +217,78 @@ export default function AboutPage() {
           {/* INFO UTAMA */}
           <Card label="Informasi Utama">
             <Field label="Nama lengkap *">
-              <input name="full_name" value={form.full_name} onChange={handleChange}
-                required className="input-field" placeholder="Sandy Fauzi Amrulloh" />
+              <input name="full_name" value={form.full_name} onChange={handleChange} required className="input-field" placeholder="Sandy Fauzi Amrulloh" />
             </Field>
             <Field label="Tagline *" hint="ditampilkan di bawah nama">
-              <input name="tagline" value={form.tagline} onChange={handleChange}
-                required className="input-field" placeholder="Video Editor · Graphic Design · 3D VFX" />
+              <input name="tagline" value={form.tagline} onChange={handleChange} required className="input-field" placeholder="Video Editor · Graphic Design · 3D VFX" />
             </Field>
             <Field label="Bio">
-              <textarea name="bio" value={form.bio} onChange={handleChange}
-                rows={4} className="input-field resize-none"
-                placeholder="Ceritakan tentang dirimu..." />
+              <textarea name="bio" value={form.bio} onChange={handleChange} rows={4} className="input-field resize-none" placeholder="Ceritakan tentang dirimu..." />
             </Field>
+          </Card>
+
+          {/* KETERANGAN SAAT INI */}
+          <Card label="Keterangan Saat Ini (Status)">
+            <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>Ditampilkan di bawah Bio (ex: Universitas, Fokus, Status).</p>
+            {info.map((item, i) => (
+              <div key={i} className="mb-2 flex items-center gap-2">
+                <input className="input-field" placeholder="Label (ex: Universitas)" value={item.label} onChange={e => updateInfo(i, 'label', e.target.value)} />
+                <input className="input-field" placeholder="Value (ex: UNPAD)" value={item.value} onChange={e => updateInfo(i, 'value', e.target.value)} />
+                <button type="button" onClick={() => removeInfo(i)} className="rounded-lg p-2 transition hover:bg-red-500/10 hover:text-red-500">✕</button>
+              </div>
+            ))}
+            <button type="button" onClick={addInfo} className="mt-2 text-xs transition hover:opacity-70" style={{ color: "var(--muted)" }}>＋ Tambah Baris Baru</button>
+          </Card>
+
+          {/* PENDIDIKAN */}
+          <Card label="Riwayat Pendidikan">
+            <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>Daftar riwayat sekolah atau instansi.</p>
+            {education.map((item, i) => (
+              <div key={i} className="mb-3 grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2">
+                <input className="input-field" placeholder="Tahun" value={item.year} onChange={e => updateEdu(i, 'year', e.target.value)} />
+                <input className="input-field" placeholder="Nama Tempat" value={item.place} onChange={e => updateEdu(i, 'place', e.target.value)} />
+                <input className="input-field" placeholder="Ket (opsional)" value={item.note} onChange={e => updateEdu(i, 'note', e.target.value)} />
+                <button type="button" onClick={() => removeEdu(i)} className="rounded-lg p-2 transition hover:bg-red-500/10 hover:text-red-500">✕</button>
+              </div>
+            ))}
+            <button type="button" onClick={addEdu} className="text-xs transition hover:opacity-70" style={{ color: "var(--muted)" }}>＋ Tambah Pendidikan Baru</button>
           </Card>
 
           {/* KONTAK & SOSMED */}
           <Card label="Kontak & Social Media">
             <div className="grid grid-cols-2 gap-3">
               <Field label="Email *">
-                <input name="email" value={form.email} onChange={handleChange}
-                  type="email" required className="input-field" />
+                <input name="email" value={form.email} onChange={handleChange} type="email" required className="input-field" />
               </Field>
               <Field label="WhatsApp">
-                <input name="whatsapp" value={form.whatsapp} onChange={handleChange}
-                  placeholder="+6281295710325" className="input-field" />
+                <input name="whatsapp" value={form.whatsapp} onChange={handleChange} placeholder="+6281295710325" className="input-field" />
               </Field>
               <Field label="Instagram">
-                <input name="instagram" value={form.instagram} onChange={handleChange}
-                  placeholder="sandzh_" className="input-field" />
+                <input name="instagram" value={form.instagram} onChange={handleChange} placeholder="sandzh_" className="input-field" />
               </Field>
               <Field label="GitHub">
-                <input name="github" value={form.github} onChange={handleChange}
-                  placeholder="SandyFauzi" className="input-field" />
-              </Field>
-              <Field label="TikTok">
-                <input name="tiktok" value={form.tiktok} onChange={handleChange}
-                  placeholder="sandzh._" className="input-field" />
-              </Field>
-              <Field label="Phone">
-                <input name="phone" value={form.phone} onChange={handleChange}
-                  placeholder="+62..." className="input-field" />
+                <input name="github" value={form.github} onChange={handleChange} placeholder="SandyFauzi" className="input-field" />
               </Field>
             </div>
           </Card>
 
           {/* TOOLS & SOFTWARE */}
           <Card label="Tools & Software">
-            <p className="text-xs" style={{ color: "var(--muted)" }}>
-              Hover tool → klik × untuk hapus. Perubahan disimpan saat klik tombol simpan di bawah.
-            </p>
-
-            {/* List tools */}
             <div className="flex flex-wrap gap-2">
               {tools.map((t, i) => (
-                <div key={i}
-                  className="group relative flex items-center gap-2 rounded-xl px-3 py-2 text-sm"
+                <div key={i} className="group relative flex items-center gap-2 rounded-xl px-3 py-2 text-sm"
                   style={{ background: "var(--bg-3)", border: "1px solid var(--border)" }}>
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
-                    style={{ background: t.bg, color: t.color }}>
-                    {t.abbr}
+                  
+                  <div className="flex h-6 w-6 shrink-0 overflow-hidden items-center justify-center rounded-md text-[10px] font-bold"
+                    style={{ background: t.icon_url ? "transparent" : t.bg, color: t.color }}>
+                    {t.icon_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={t.icon_url} alt={t.name} className="h-full w-full object-contain" />
+                    ) : (
+                      t.abbr
+                    )}
                   </div>
+
                   <span>{t.name}</span>
                   <button type="button" onClick={() => removeTool(i)}
                     className="ml-0.5 text-sm leading-none opacity-0 transition group-hover:opacity-60 hover:!opacity-100"
@@ -247,93 +301,45 @@ export default function AboutPage() {
 
             {/* Form tambah tool */}
             {showAddTool ? (
-              <div className="rounded-xl p-4 space-y-3"
-                style={{ background: "var(--bg-3)", border: "1px solid var(--border)" }}>
-                <p className="font-mono text-[10px] uppercase tracking-[0.15em]"
-                  style={{ color: "var(--muted)" }}>Software baru</p>
+              <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-3)", border: "1px solid var(--border)" }}>
+                <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Software baru</p>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Nama">
-                    <input value={newTool.name}
-                      onChange={(e) => setNewTool((p) => ({ ...p, name: e.target.value }))}
-                      placeholder="Blender" className="input-field" />
+                    <input value={newTool.name} onChange={(e) => setNewTool((p) => ({ ...p, name: e.target.value }))} placeholder="Blender" className="input-field" />
                   </Field>
-                  <Field label="Singkatan (maks 3 huruf)">
-                    <input value={newTool.abbr} maxLength={3}
-                      onChange={(e) => setNewTool((p) => ({ ...p, abbr: e.target.value.toUpperCase() }))}
-                      placeholder="BL" className="input-field" />
+                  <Field label="Singkatan (3 huruf)">
+                    <input value={newTool.abbr} maxLength={3} onChange={(e) => setNewTool((p) => ({ ...p, abbr: e.target.value.toUpperCase() }))} placeholder="BL" className="input-field" />
                   </Field>
                   <Field label="Warna teks icon">
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={newTool.color}
-                        onChange={(e) => setNewTool((p) => ({ ...p, color: e.target.value }))}
-                        className="h-9 w-12 cursor-pointer rounded-lg p-0.5"
-                        style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }} />
-                      <code className="text-xs" style={{ color: "var(--muted)" }}>{newTool.color}</code>
-                    </div>
+                    <input type="color" value={newTool.color} onChange={(e) => setNewTool((p) => ({ ...p, color: e.target.value }))} className="h-9 w-full cursor-pointer rounded-lg p-0.5 input-field" />
                   </Field>
                   <Field label="Background icon">
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={newTool.bg}
-                        onChange={(e) => setNewTool((p) => ({ ...p, bg: e.target.value }))}
-                        className="h-9 w-12 cursor-pointer rounded-lg p-0.5"
-                        style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }} />
-                      <code className="text-xs" style={{ color: "var(--muted)" }}>{newTool.bg}</code>
-                    </div>
+                    <input type="color" value={newTool.bg} onChange={(e) => setNewTool((p) => ({ ...p, bg: e.target.value }))} className="h-9 w-full cursor-pointer rounded-lg p-0.5 input-field" />
                   </Field>
                 </div>
-                {/* Live preview */}
-                {newTool.name && (
-                  <div>
-                    <p className="mb-1 font-mono text-[9px] uppercase" style={{ color: "var(--muted)" }}>Preview</p>
-                    <div className="flex w-fit items-center gap-2 rounded-xl px-3 py-2"
-                      style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
-                      <div className="flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold"
-                        style={{ background: newTool.bg, color: newTool.color }}>
-                        {newTool.abbr || "??"}
-                      </div>
-                      <span className="text-sm">{newTool.name}</span>
-                    </div>
-                  </div>
-                )}
+                
+                <Field label="Atau Upload Gambar Icon (Opsional)">
+                  <input type="file" accept="image/*" onChange={(e) => setNewTool(p => ({...p, file: e.target.files?.[0]}))} 
+                    className="block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--text)] file:text-[var(--bg)] file:px-3 file:py-1.5 cursor-pointer" />
+                </Field>
+
                 <div className="flex gap-2 pt-1">
-                  <button type="button" onClick={addTool}
-                    className="rounded-lg px-4 py-2 text-xs font-semibold transition hover:opacity-80"
-                    style={{ background: "var(--text)", color: "var(--bg)" }}>
-                    Tambah
-                  </button>
-                  <button type="button" onClick={() => setShowAddTool(false)}
-                    className="rounded-lg px-4 py-2 text-xs transition hover:opacity-70"
-                    style={{ border: "1px solid var(--border)", color: "var(--muted)" }}>
-                    Batal
-                  </button>
+                  <button type="button" onClick={addTool} className="rounded-lg px-4 py-2 text-xs font-semibold transition hover:opacity-80" style={{ background: "var(--text)", color: "var(--bg)" }}>Tambah</button>
+                  <button type="button" onClick={() => setShowAddTool(false)} className="rounded-lg px-4 py-2 text-xs transition hover:opacity-70" style={{ border: "1px solid var(--border)", color: "var(--muted)" }}>Batal</button>
                 </div>
               </div>
             ) : (
-              <button type="button" onClick={() => setShowAddTool(true)}
-                className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition hover:opacity-70"
-                style={{ border: "1px dashed var(--border-hover)", color: "var(--muted)" }}>
+              <button type="button" onClick={() => setShowAddTool(true)} className="mt-2 flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition hover:opacity-70" style={{ border: "1px dashed var(--border-hover)", color: "var(--muted)" }}>
                 ＋ Tambah software
               </button>
             )}
           </Card>
 
           {/* STATUS */}
-          {error && (
-            <p className="rounded-xl px-4 py-3 text-sm"
-              style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>
-              ⚠ {error}
-            </p>
-          )}
-          {success && (
-            <p className="rounded-xl px-4 py-3 text-sm"
-              style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>
-              ✓ Berhasil disimpan!
-            </p>
-          )}
+          {error && <p className="rounded-xl px-4 py-3 text-sm" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>⚠ {error}</p>}
+          {success && <p className="rounded-xl px-4 py-3 text-sm" style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>✓ Berhasil disimpan!</p>}
 
-          <button type="submit" disabled={saving}
-            className="w-full rounded-xl py-3 text-sm font-semibold transition hover:opacity-80 disabled:opacity-40"
-            style={{ background: "var(--text)", color: "var(--bg)" }}>
+          <button type="submit" disabled={saving} className="w-full rounded-xl py-3 text-sm font-semibold transition hover:opacity-80 disabled:opacity-40" style={{ background: "var(--text)", color: "var(--bg)" }}>
             {saving ? "Menyimpan..." : "Simpan Semua Perubahan"}
           </button>
         </form>
@@ -345,10 +351,8 @@ export default function AboutPage() {
 // ── Helpers ──────────────────────────────────────────────────────
 function Card({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-4 rounded-2xl p-5"
-      style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em]"
-        style={{ color: "var(--muted)" }}>{label}</p>
+    <div className="space-y-4 rounded-2xl p-5" style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>{label}</p>
       {children}
     </div>
   );
@@ -357,10 +361,8 @@ function Card({ label, children }: { label: string; children: React.ReactNode })
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.15em]"
-        style={{ color: "var(--muted)" }}>
-        {label}
-        {hint && <span className="ml-1 normal-case opacity-50">— {hint}</span>}
+      <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>
+        {label} {hint && <span className="ml-1 normal-case opacity-50">— {hint}</span>}
       </label>
       {children}
     </div>
