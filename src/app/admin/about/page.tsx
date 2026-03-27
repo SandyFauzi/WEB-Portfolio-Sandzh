@@ -389,22 +389,93 @@ export default function AboutPage() {
               </p>
 
               {/* List tools */}
-              <div className="flex flex-wrap gap-2">
+              <div className="space-y-2">
                 {tools.map((t, i) => (
-                  <div key={i}
-                    className="group flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm"
+                  <div key={i} className="rounded-xl p-3 space-y-3"
                     style={{ background: "var(--bg-3)", border: "1px solid var(--border)" }}>
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg text-[11px] font-bold"
-                      style={{ background: t.icon_url ? "transparent" : t.bg, color: t.color }}>
-                      {t.icon_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={t.icon_url} alt={t.name} className="h-full w-full object-contain" />
-                      ) : t.abbr}
+                    
+                    {/* Row atas: icon preview + nama + hapus */}
+                    <div className="flex items-center gap-3">
+                      {/* Icon preview */}
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg text-[11px] font-bold"
+                        style={{ background: t.icon_url ? "transparent" : t.bg, color: t.color }}>
+                        {t.icon_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={t.icon_url} alt={t.name} className="h-full w-full object-contain" />
+                        ) : (t.abbr || "?")}
+                      </div>
+              
+                      {/* Nama */}
+                      <input
+                        value={t.name}
+                        onChange={e => setTools(p => p.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
+                        placeholder="Nama tool"
+                        className="input-field flex-1"
+                        style={{ padding: "8px 12px", fontSize: "13px" }}
+                      />
+              
+                      {/* Hapus */}
+                      <button type="button" onClick={() => removeTool(i)}
+                        className="shrink-0 rounded-lg px-2.5 py-2 text-xs transition hover:opacity-70"
+                        style={{ border: "1px solid var(--border)", color: "#f87171" }}>
+                        ✕
+                      </button>
                     </div>
-                    <span>{t.name}</span>
-                    <button type="button" onClick={() => removeTool(i)}
-                      className="ml-1 text-base leading-none opacity-30 transition hover:opacity-100"
-                      style={{ color: "#f87171" }}>×</button>
+              
+                    {/* Row bawah: singkatan + warna + upload icon */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="mb-1 font-mono text-[9px] uppercase" style={{ color: "var(--muted)" }}>Singkatan</p>
+                        <input
+                          value={t.abbr}
+                          maxLength={3}
+                          onChange={e => setTools(p => p.map((x, idx) => idx === i ? { ...x, abbr: e.target.value.toUpperCase() } : x))}
+                          placeholder="Pr"
+                          className="input-field"
+                          style={{ padding: "8px 12px", fontSize: "13px" }}
+                        />
+                      </div>
+                      <div>
+                        <p className="mb-1 font-mono text-[9px] uppercase" style={{ color: "var(--muted)" }}>Warna teks</p>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={t.color}
+                            onChange={e => setTools(p => p.map((x, idx) => idx === i ? { ...x, color: e.target.value } : x))}
+                            className="h-10 w-12 cursor-pointer rounded-lg p-0.5 input-field" />
+                          <input type="color" value={t.bg}
+                            onChange={e => setTools(p => p.map((x, idx) => idx === i ? { ...x, bg: e.target.value } : x))}
+                            className="h-10 w-12 cursor-pointer rounded-lg p-0.5 input-field" />
+                          <span className="font-mono text-[9px]" style={{ color: "var(--muted)" }}>txt / bg</span>
+                        </div>
+                      </div>
+                    </div>
+              
+                    {/* Upload icon baru */}
+                    <div>
+                      <p className="mb-1 font-mono text-[9px] uppercase" style={{ color: "var(--muted)" }}>
+                        Ganti icon {t.icon_url && <span className="normal-case opacity-60">— sudah ada icon</span>}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs transition hover:opacity-70"
+                          style={{ border: "1px solid var(--border)", color: "var(--muted)" }}>
+                          ↑ Upload
+                          <input type="file" accept="image/*" className="hidden"
+                            onChange={e => setTools(p => p.map((x, idx) => idx === i ? { ...x, file: e.target.files?.[0] } : x))} />
+                        </label>
+                        {t.file && (
+                          <span className="font-mono text-[10px]" style={{ color: "var(--muted)" }}>
+                            {t.file.name}
+                          </span>
+                        )}
+                        {t.icon_url && !t.file && (
+                          <button type="button"
+                            onClick={() => setTools(p => p.map((x, idx) => idx === i ? { ...x, icon_url: undefined } : x))}
+                            className="text-xs transition hover:opacity-70" style={{ color: "#f87171" }}>
+                            ✕ Hapus icon
+                          </button>
+                        )}
+                      </div>
+                    </div>
+              
                   </div>
                 ))}
               </div>
