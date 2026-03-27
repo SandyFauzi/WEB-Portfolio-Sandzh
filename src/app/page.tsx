@@ -33,11 +33,16 @@ function isYouTubeUrl(url: string) {
 
 export default async function HomePage() {
   const supabase = createClient();
-  const [{ data: about }, { data: projects }, { data: skills }] = await Promise.all([
+  // Pisahkan destructuring dan berikan explicit "any" untuk mematikan rewelnya TypeScript
+  const [aboutRes, projectsRes, skillsRes] = await Promise.all([
     supabase.from("about").select("*").single(),
     supabase.from("projects").select("*").order("sort_order", { ascending: true }),
     supabase.from("skills").select("*").order("sort_order", { ascending: true }),
   ]);
+
+  const about: any    = aboutRes.data || {};
+  const projects: any = projectsRes.data || [];
+  const skills: any   = skillsRes.data || [];
 
   const name    = about?.full_name ?? "Sandy Fauzi Amrulloh";
   const tagline = about?.tagline   ?? "Video Editor · Graphic Design · 3D VFX Artist";
