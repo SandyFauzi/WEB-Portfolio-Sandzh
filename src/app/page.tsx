@@ -267,7 +267,7 @@ export default async function HomePage() {
             </div>
           ) : (
             <div className="space-y-14">
-              {Object.entries(grouped).map(([cat, items]) => (
+              {Object.entries(grouped).map(([cat, items]: [string, any[]]) => (
                 <div key={cat}>
                   <div className="mb-5 flex items-center gap-3">
                     <Label>{CAT_LABEL[cat] ?? cat}</Label>
