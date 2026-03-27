@@ -87,7 +87,7 @@ export default async function HomePage() {
               alt="SANDZH" 
               className="h-full w-full object-contain object-left theme-logo" 
             />
-          </div>
+           </div>
 
           <div className="flex items-center gap-5">
             <ThemeToggle />
