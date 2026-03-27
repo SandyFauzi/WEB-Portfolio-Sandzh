@@ -80,16 +80,15 @@ export default async function HomePage() {
       <nav className="fixed top-0 z-50 w-full nav-blur border-b border-dim">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-12">
           
-          {/* Logo Dinamis (Theme Aware) */}
-          <div className="relative h-5 w-24 opacity-80 hover:opacity-100 transition-opacity">
-            {/* Muncul di Dark Mode */}
+          {/* Logo (Otomatis Invert Warna di CSS) */}
+          <div className="h-6 w-28 md:h-7 md:w-32 opacity-90 transition-opacity hover:opacity-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/Sandzh White.png" alt="SANDZH" className="hidden dark:block h-full w-full object-contain object-left" />
-            
-            {/* Muncul di Light Mode */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/Sandzh Black.png" alt="SANDZH" className="block dark:hidden h-full w-full object-contain object-left" />
-           </div>
+            <img 
+              src="/Sandzh Black.png" 
+              alt="SANDZH" 
+              className="h-full w-full object-contain object-left theme-logo" 
+            />
+          </div>
 
           <div className="flex items-center gap-5">
             <ThemeToggle />
