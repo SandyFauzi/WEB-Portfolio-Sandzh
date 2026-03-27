@@ -179,12 +179,17 @@ export default async function HomePage() {
             <Label>Tools & Software</Label>
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
-          <div className="flex flex-wrap gap-3">
+      
+          {/* Grid 4 kolom desktop, 2 kolom HP */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {software.map((s: any, i: number) => (
               <div key={i}
-                className="group flex items-center gap-2.5 rounded-xl px-4 py-2.5 transition hover:scale-105"
+                className="group flex items-center gap-3 rounded-2xl px-4 py-3.5 transition hover:scale-[1.02]"
                 style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
-                <div className="flex h-7 w-7 shrink-0 overflow-hidden items-center justify-center rounded-lg text-[11px] font-bold"
+      
+                {/* Icon */}
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[12px] font-bold"
                   style={{ background: s.icon_url ? "transparent" : s.bg, color: s.color }}>
                   {s.icon_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -193,7 +198,9 @@ export default async function HomePage() {
                     s.abbr
                   )}
                 </div>
-                <span className="text-sm font-medium">{s.name}</span>
+      
+                {/* Nama */}
+                <span className="truncate text-sm font-medium">{s.name}</span>
               </div>
             ))}
           </div>
