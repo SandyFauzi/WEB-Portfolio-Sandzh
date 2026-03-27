@@ -9,7 +9,10 @@ export const metadata: Metadata = {
   title: "Sandzh — Portfolio",
   description: "Video Editor, Graphic Designer, and 3D VFX Artist.",
   icons: {
-    icon: "/SW.png", // Memaksa Next.js membaca file SW.png di folder public
+    icon: [
+      { url: "/SB.png", media: "(prefers-color-scheme: light)" },
+      { url: "/SW.png", media: "(prefers-color-scheme: dark)" },
+    ],
   },
 };
 
