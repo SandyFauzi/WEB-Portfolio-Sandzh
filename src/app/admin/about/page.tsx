@@ -28,6 +28,12 @@ const DEFAULT_EDU = [
   { year: "2012 – 18",   place: "SD Sukamaju",             note: "" },
 ];
 
+// INI YANG KETINGGALAN KEMARIN BOS! ⬇️
+const DEFAULT_EXP = [
+  { year: "2023 - 2024", title: "Ketua Divisi PDD", org: "BEM Kema UNPAD", link_label: "Lihat Aftermovie", link: "#" },
+  { year: "2022", title: "Staff Dekorasi & Dokumentasi", org: "Kepanitiaan Fakultas", link_label: "Poster Project", link: "#" },
+];
+
 type Tool = { name: string; abbr: string; color: string; bg: string; icon_url?: string; file?: File | null };
 type InfoObj = { label: string; value: string };
 type EduObj = { year: string; place: string; note: string };
@@ -47,7 +53,7 @@ export default function AboutPage() {
   
   const [info, setInfo]               = useState<InfoObj[]>([]);
   const [education, setEducation]     = useState<EduObj[]>([]);
-  const [experience, setExperience]   = useState<ExpObj[]>([]); // State baru untuk Organisasi
+  const [experience, setExperience]   = useState<ExpObj[]>([]); 
 
   const [avatarFile, setAvatarFile]   = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
@@ -78,12 +84,14 @@ export default function AboutPage() {
         setTools(s.tools && Array.isArray(s.tools) && s.tools.length > 0 ? s.tools : DEFAULT_TOOLS);
         setInfo(s.info && Array.isArray(s.info) && s.info.length > 0 ? s.info : DEFAULT_INFO);
         setEducation(s.education && Array.isArray(s.education) && s.education.length > 0 ? s.education : DEFAULT_EDU);
-        setExperience(s.experience && Array.isArray(s.experience) ? s.experience : []);
+        
+        // Memastikan DEFAULT_EXP dipanggil kalau belum ada data di database
+        setExperience(s.experience && Array.isArray(s.experience) && s.experience.length > 0 ? s.experience : DEFAULT_EXP);
       } else {
          setTools(DEFAULT_TOOLS);
          setInfo(DEFAULT_INFO);
          setEducation(DEFAULT_EDU);
-         setExperience([]);
+         setExperience(DEFAULT_EXP);
       }
       setLoading(false);
     }
@@ -174,7 +182,7 @@ export default function AboutPage() {
         socials: {
           instagram: form.instagram, github: form.github,
           tiktok: form.tiktok, whatsapp: form.whatsapp,
-          info, education, experience, tools: finalTools, // <--- Experience masuk ke sini
+          info, education, experience, tools: finalTools,
         },
       };
 
@@ -283,7 +291,7 @@ export default function AboutPage() {
             <button type="button" onClick={addEdu} className="text-xs transition hover:opacity-70" style={{ color: "var(--muted)" }}>＋ Tambah Pendidikan Baru</button>
           </Card>
 
-          {/* PENGALAMAN ORGANISASI & KEPANITIAAN (BARU) */}
+          {/* PENGALAMAN ORGANISASI & KEPANITIAAN */}
           <Card label="Pengalaman Organisasi & Kepanitiaan">
             <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>Daftar organisasi dan event beserta link hasil kerjanya.</p>
             {experience.map((item, i) => (
