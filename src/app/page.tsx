@@ -90,7 +90,17 @@ export default async function HomePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/Sandzh Black.png" alt="SANDZH" className="block dark:hidden h-full w-full object-contain object-left" />
            </div>
+
           <div className="flex items-center gap-5">
+            <ThemeToggle />
+            {["work","skills","about","contact"].map((s) => (
+              <a key={s} href={`#${s}`}
+                className="hidden font-mono text-[10px] uppercase tracking-[0.15em] text-muted transition hover:opacity-80 sm:block">
+                {s}
+              </a>
+            ))}
+          </div>
+        </div>
       </nav>
 
       {/* ── HERO ── */}
