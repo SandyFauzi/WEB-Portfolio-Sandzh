@@ -37,19 +37,27 @@ export default function YouTubeEmbed({ url, title }: { url: string; title: strin
         <button onClick={() => setPlaying(true)} className="group relative h-full w-full">
           {/* Thumbnail */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={thumb} alt={title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105 group-hover:opacity-80" />
-          {/* Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.3)" }}>
-            <div className="flex h-14 w-14 items-center justify-center rounded-full transition group-hover:scale-110"
+          <img 
+            src={thumb} 
+            alt={title} 
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105" 
+          />
+          
+          {/* Overlay (Gelap + Tombol Play) - Hanya muncul saat di-hover */}
+          <div 
+            className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            style={{ background: "rgba(0,0,0,0.4)" }}
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110"
               style={{ background: "rgba(255,255,255,0.95)" }}>
               <svg viewBox="0 0 24 24" className="h-6 w-6 translate-x-0.5" fill="#0c0c0c">
                 <path d="M8 5v14l11-7z"/>
               </svg>
             </div>
           </div>
-          {/* YT badge */}
-          <div className="absolute bottom-2 left-2 rounded px-1.5 py-0.5 font-mono text-[9px] text-white"
+          
+          {/* YT badge (Opsional: Tetap muncul atau ikut disembunyikan. Di sini saya biarkan tetap muncul) */}
+          <div className="absolute bottom-2 left-2 rounded px-1.5 py-0.5 font-mono text-[9px] text-white transition-opacity duration-300 group-hover:opacity-0"
             style={{ background: "rgba(0,0,0,0.6)" }}>
             YouTube
           </div>
