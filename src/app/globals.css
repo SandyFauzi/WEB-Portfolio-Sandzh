@@ -2,81 +2,166 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT default */
 :root {
-  --bg:           #f7f5f0;
-  --bg-2:         #edeae3;
-  --bg-3:         #e2dfd7;
-  --border:       rgba(0,0,0,0.09);
-  --border-hover: rgba(0,0,0,0.22);
-  --text:         #0c0c0c;
-  --muted:        #888880;
-  --nav-bg:       rgba(247,245,240,0.88);
-  --card-bg:      #ffffff;
-  --accent:       #0c0c0c;
+  /* TEMA LIGHT - NOIR KERTAS KORAN */
+  --bg: #f8f8f8;
+  --bg-2: #eeeeee;
+  --bg-3: #e2e2e2;
+  --text: #111111;
+  --muted: #555555;
+  --border: #d1d1d1;
+  --border-hover: #aaaaaa;
+  --dim: rgba(0, 0, 0, 0.1);
+  --dim-hover: rgba(0, 0, 0, 0.2);
+  --card-bg: rgba(248, 248, 248, 0.85);
 }
 
-/* DARK */
 [data-theme="dark"] {
-  --bg:           #0a0a08;
-  --bg-2:         #111110;
-  --bg-3:         #1a1a18;
-  --border:       rgba(255,255,255,0.08);
-  --border-hover: rgba(255,255,255,0.18);
-  --text:         #f0ede6;
-  --muted:        #666660;
-  --nav-bg:       rgba(10,10,8,0.88);
-  --card-bg:      #111110;
-  --accent:       #f0ede6;
+  /* TEMA DARK - IBM TERMINAL NOIR */
+  --bg: #080808;
+  --bg-2: #121212;
+  --bg-3: #1a1a1a;
+  --text: #f0f0f0;
+  --muted: #888888;
+  --border: #2a2a2a;
+  --border-hover: #444444;
+  --dim: rgba(255, 255, 255, 0.08);
+  --dim-hover: rgba(255, 255, 255, 0.15);
+  --card-bg: rgba(8, 8, 8, 0.85);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--bg);
+  background-color: var(--bg);
   color: var(--text);
   font-family: var(--font-sans), sans-serif;
-  min-height: 100dvh;
+  transition: background-color 0.3s ease, color 0.3s ease;
   overflow-x: hidden;
-  transition: background 0.25s ease, color 0.25s ease;
+  /* Animasi flicker sangat halus ala layar tabung IBM */
+  animation: crtFlicker 0.15s infinite;
 }
 
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border-hover); }
-::selection { background: var(--text); color: var(--bg); }
+/* ─── RETRO IBM & NOIR EFFECTS ────────────────────────────── */
+
+/* 1. Efek Glow (Pendar) Teks ala Fosfor Monokrom di Dark Mode */
+[data-theme="dark"] body {
+  text-shadow: 0 0 2px rgba(240, 240, 240, 0.3);
+}
+
+/* 2. Blocky Selection ala DOS/Terminal (Saat Teks Di-blok) */
+::selection {
+  background: var(--text);
+  color: var(--bg);
+  text-shadow: none; /* Matikan glow saat di-blok */
+}
+
+/* 3. CRT Scanlines (Garis-garis Layar Tabung) */
+body::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+  background-size: 100% 4px;
+  z-index: 9999;
+  pointer-events: none; /* Biar tetap bisa diklik */
+  opacity: 0.6;
+}
+
+/* 4. Layar Cembung (Vignette Shadow di Pinggiran) */
+body::after {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.15) 100%);
+  z-index: 9998;
+  pointer-events: none;
+}
+
+/* Gelapkan sedikit pinggiran di Dark Mode */
+[data-theme="dark"] body::after {
+  background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%);
+}
+
+/* 5. Scrollbar Retro (Kotak Kaku ala OS Jadul) */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-2);
+  border-left: 1px solid var(--border);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text);
+  border: 2px solid var(--bg-2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* ─── ANIMASI ─────────────────────────────────────────────── */
+
+/* Flicker Layar Tabung Halus */
+@keyframes crtFlicker {
+  0% { opacity: 0.98; }
+  50% { opacity: 1; }
+  100% { opacity: 0.99; }
+}
+
+.fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.fade-up-2 {
+  opacity: 0;
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+.fade-up-3 {
+  opacity: 0;
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+}
+.fade-up-4 {
+  opacity: 0;
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
 
 @keyframes fadeUp {
-  from { opacity:0; transform:translateY(20px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-.fade-up   { animation: fadeUp 0.65s ease both; }
-.fade-up-2 { animation: fadeUp 0.65s 0.12s ease both; }
-.fade-up-3 { animation: fadeUp 0.65s 0.24s ease both; }
-.fade-up-4 { animation: fadeUp 0.65s 0.36s ease both; }
-
-@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-.marquee-inner { animation: marquee 24s linear infinite; display:flex; white-space:nowrap; }
-.marquee-inner:hover { animation-play-state: paused; }
-
-@layer utilities {
-  .border-dim       { border: 1px solid var(--border); }
-  .border-dim-hover { border: 1px solid var(--border-hover); }
-  .text-muted       { color: var(--muted); }
-  .bg-surface       { background: var(--bg-2); }
-  .bg-elevated      { background: var(--bg-3); }
-  .bg-card          { background: var(--card-bg); }
-  .nav-blur { background: var(--nav-bg); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.input-field {
-  width: 100%; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-family: inherit;
-  background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-  outline: none; transition: border-color 0.2s;
+.nav-blur {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
-.input-field:focus { border-color: var(--border-hover); }
-.input-field::placeholder { color: var(--muted); opacity: 0.7; }
-select.input-field option { background: var(--bg-2); color: var(--text); }
+
+.marquee-inner {
+  display: flex;
+  width: max-content;
+  animation: marquee 20s linear infinite;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
 
 /* --- Trik Membalik Warna Logo di Dark Mode --- */
 [data-theme="dark"] .theme-logo {
