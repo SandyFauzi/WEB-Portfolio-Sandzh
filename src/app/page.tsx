@@ -15,7 +15,6 @@ const CAT_LABEL: Record<string, string> = {
   "3d_vfx": "3D · VFX", physics: "Physics", programming: "Programming", photography: "Photography",
 };
 
-// Software icons SVG paths (simplified brand-accurate)
 const DEFAULT_SOFTWARE = [
   { name: "Premiere Pro", abbr: "Pr", color: "#9999FF", bg: "#0a0a1e" },
   { name: "After Effects", abbr: "Ae", color: "#9999FF", bg: "#0d0a1a" },
@@ -33,7 +32,6 @@ function isYouTubeUrl(url: string) {
 
 export default async function HomePage() {
   const supabase = createClient();
-  // Pisahkan destructuring dan berikan explicit "any" untuk mematikan rewelnya TypeScript
   const [aboutRes, projectsRes, skillsRes] = await Promise.all([
     supabase.from("about").select("*").single(),
     supabase.from("projects").select("*").order("sort_order", { ascending: true }),
@@ -47,12 +45,26 @@ export default async function HomePage() {
   const name    = about?.full_name ?? "Sandy Fauzi Amrulloh";
   const tagline = about?.tagline   ?? "Video Editor · Graphic Design · 3D VFX Artist";
   const bio     = about?.bio       ?? "Freelance video editor dan graphic designer dengan background Fisika UNPAD dan Teknik Elektronika.";
-  const socials  = (about?.socials ?? {}) as Record<string, unknown>;
-  const software = (Array.isArray(socials.tools) && (socials.tools as unknown[]).length > 0)
-    ? socials.tools as { name: string; abbr: string; color: string; bg: string }[]
-    : DEFAULT_SOFTWARE;
+  
+  const socials = (about?.socials ?? {}) as any;
 
-// Gunakan 'any' pada type assertion untuk menghindari error "untyped function calls"
+  // Render Dinamis untuk Education & Info
+  const infoArray = (Array.isArray(socials.info) && socials.info.length > 0) ? socials.info : [
+    { label: "Universitas", value: "UNPAD" },
+    { label: "Jurusan",     value: "Fisika" },
+    { label: "Fokus",       value: "Creative Tech" },
+    { label: "Status",      value: "Freelance" },
+  ];
+
+  const eduArray = (Array.isArray(socials.education) && socials.education.length > 0) ? socials.education : [
+    { year: "2024 –",      place: "Universitas Padjadjaran", note: "S1 Fisika" },
+    { year: "2021 – 24",   place: "SMKN 1 Sumedang",        note: "Teknik Elektronika" },
+    { year: "2018 – 21",   place: "SMPN 1 Sumedang",        note: "" },
+    { year: "2012 – 18",   place: "SD Sukamaju",             note: "" },
+  ];
+
+  const software = (Array.isArray(socials.tools) && socials.tools.length > 0) ? socials.tools : DEFAULT_SOFTWARE;
+
   const grouped = projects.reduce((acc: Record<string, any[]>, p: any) => {
     if (!p) return acc;
     if (!acc[p.category]) acc[p.category] = [];
@@ -98,7 +110,7 @@ export default async function HomePage() {
                 <Label>Available for freelance</Label>
               </div>
               <h1 className="fade-up-2 mb-5 text-[clamp(2.8rem,9vw,7rem)] font-extrabold leading-[0.88] tracking-tight">
-                {name.split(" ").map((w, i) => <span key={i} className="block">{w}</span>)}
+                {name.split(" ").map((w: string, i: number) => <span key={i} className="block">{w}</span>)}
               </h1>
               <p className="fade-up-3 mb-8 max-w-xs text-sm leading-relaxed text-muted">{tagline}</p>
               <div className="fade-up-4 flex flex-wrap items-center gap-4">
@@ -158,15 +170,22 @@ export default async function HomePage() {
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
           <div className="flex flex-wrap gap-3">
-            {software.map((s) => (
-              <div key={s.name}
+            {software.map((s: any, i: number) => (
+              <div key={i}
                 className="group flex items-center gap-2.5 rounded-xl px-4 py-2.5 transition hover:scale-105"
                 style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
-                {/* Icon badge */}
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold"
-                  style={{ background: s.bg, color: s.color }}>
-                  {s.abbr}
+                
+                {/* Icon badge - Mendukung Image Upload */}
+                <div className="flex h-7 w-7 shrink-0 overflow-hidden items-center justify-center rounded-lg text-[11px] font-bold"
+                  style={{ background: s.icon_url ? "transparent" : s.bg, color: s.color }}>
+                  {s.icon_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={s.icon_url} alt={s.name} className="h-full w-full object-contain" />
+                  ) : (
+                    s.abbr
+                  )}
                 </div>
+
                 <span className="text-sm font-medium">{s.name}</span>
               </div>
             ))}
@@ -187,29 +206,23 @@ export default async function HomePage() {
             <div>
               <h2 className="mb-5 text-4xl font-bold leading-tight">Fisika &<br />Kreativitas</h2>
               <p className="leading-relaxed text-muted">{bio}</p>
+              
+              {/* Render Info Dinamis */}
               <div className="mt-8 grid grid-cols-2 gap-3">
-                {[
-                  { label: "Universitas", value: "UNPAD" },
-                  { label: "Jurusan",     value: "Fisika" },
-                  { label: "Fokus",       value: "Creative Tech" },
-                  { label: "Status",      value: "Freelance" },
-                ].map((item) => (
-                  <div key={item.label} className="rounded-xl p-4 border-dim bg-card">
+                {infoArray.map((item: any, idx: number) => (
+                  <div key={idx} className="rounded-xl p-4 border-dim bg-card">
                     <Label>{item.label}</Label>
                     <p className="mt-1 font-semibold">{item.value}</p>
                   </div>
                 ))}
               </div>
             </div>
+            
             <div>
               <Label>Pendidikan</Label>
               <div className="mt-5">
-                {[
-                  { year: "2024 –",      place: "Universitas Padjadjaran", note: "S1 Fisika" },
-                  { year: "2021 – 24",   place: "SMKN 1 Sumedang",        note: "Teknik Elektronika" },
-                  { year: "2018 – 21",   place: "SMPN 1 Sumedang",        note: "" },
-                  { year: "2012 – 18",   place: "SD Sukamaju",             note: "" },
-                ].map((e, i) => (
+                {/* Render Pendidikan Dinamis */}
+                {eduArray.map((e: any, i: number) => (
                   <div key={i} className="flex gap-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
                     <span className="w-20 shrink-0 font-mono text-xs text-muted">{e.year}</span>
                     <div>
@@ -234,7 +247,7 @@ export default async function HomePage() {
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
           <div>
-            {(skills ?? []).map((s, i) => (
+            {skills.map((s: any, i: number) => (
               <div key={s.id} className="flex items-center gap-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
                 <span className="w-6 shrink-0 font-mono text-[10px] text-muted">{String(i+1).padStart(2,"0")}</span>
                 <span className="w-44 shrink-0 font-semibold text-sm">{s.name}</span>
@@ -276,7 +289,7 @@ export default async function HomePage() {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {items.map((p) => {
                       const hasYT = !!p.external_url && isYouTubeUrl(p.external_url);
-                      const hasDrive = !!(p as Record<string,unknown>).gdrive_url;
+                      const hasDrive = !!p.gdrive_url;
                       return (
                         <div key={p.id} className="group overflow-hidden rounded-2xl bg-card border-dim transition hover:border-dim-hover">
                           {/* Media — YouTube embed atau thumbnail */}
@@ -302,7 +315,7 @@ export default async function HomePage() {
                             )}
                             {p.tags?.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-1.5">
-                                {p.tags.map((tag) => (
+                                {p.tags.map((tag: string) => (
                                   <span key={tag} className="rounded-lg px-2 py-0.5 font-mono text-[10px] text-muted"
                                     style={{ background: "var(--bg-2)" }}>
                                     {tag}
@@ -315,8 +328,7 @@ export default async function HomePage() {
                             {(hasDrive || (p.external_url && !hasYT)) && (
                               <div className="mt-4 flex gap-2">
                                 {hasDrive && (
-                                  <a href={String((p as Record<string,unknown>).gdrive_url)}
-                                    target="_blank" rel="noreferrer"
+                                  <a href={p.gdrive_url} target="_blank" rel="noreferrer"
                                     className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition hover:opacity-80"
                                     style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
                                     <span>▤</span> Drive files
