@@ -4,14 +4,13 @@ import WakaStats from "@/components/WakaStats";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import GDriveEmbed from "@/components/GDriveEmbed";
 
-// --- TAMBAHKAN BARIS INI UNTUK MEMATIKAN CACHE BASI ---
+// --- MEMATIKAN CACHE BASI SUPAYA GAMBAR FLICKR/CLOUDFLARE LANGSUNG MUNCUL ---
 export const dynamic = "force-dynamic";
 
 function Label({ children }: { children: React.ReactNode }) {
   return <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">{children}</span>;
 }
 
-// ... (kode ke bawahnya tetap sama biarkan saja)
 function Divider() {
   return <div className="w-full border-t" style={{ borderColor: "var(--border)" }} />;
 }
@@ -92,7 +91,7 @@ export default async function HomePage() {
       <nav className="fixed top-0 z-50 w-full nav-blur border-b border-dim">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-12">
           
-          <div className="h-6 w-28 md:h-7 md:w-32 opacity-90 transition-opacity hover:opacity-100 origin-left scale-[3]">
+          <div className="h-6 w-28 md:h-7 md:w-32 opacity-90 transition-opacity hover:opacity-100 origin-left scale-[1.2]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/Sandzh Black.png" 
@@ -185,14 +184,14 @@ export default async function HomePage() {
             <Label>Tools & Software</Label>
             <div className="h-px flex-1" style={{ background: "var(--border)" }} />
           </div>
-      
+          
           {/* Grid 4 kolom desktop, 2 kolom HP */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {software.map((s: any, i: number) => (
               <div key={i}
                 className="group flex items-center gap-3 rounded-2xl px-4 py-3.5 transition hover:scale-[1.02]"
                 style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
-      
+                
                 {/* Icon */}
                 <div
                   className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[12px] font-bold"
@@ -204,7 +203,7 @@ export default async function HomePage() {
                     s.abbr
                   )}
                 </div>
-      
+                
                 {/* Nama */}
                 <span className="truncate text-sm font-medium">{s.name}</span>
               </div>
@@ -257,7 +256,7 @@ export default async function HomePage() {
 
       <Divider />
 
-      {/* ── EXPERIENCE & ORGANISATIONS (BARU) ── */}
+      {/* ── EXPERIENCE & ORGANISATIONS ── */}
       <section id="experience" className="px-6 py-20 md:px-12">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 flex items-center gap-4">
@@ -345,10 +344,12 @@ export default async function HomePage() {
                       const hasDrive = !!p.gdrive_url;
                       return (
                         <div key={p.id} className="group overflow-hidden rounded-2xl bg-card border-dim transition hover:border-dim-hover">
+                          
+                          {/* Logika Media Thumbnail / Embed yang Diperbaiki */}
                           {hasYT ? (
                            <YouTubeEmbed url={p.external_url!} title={p.title} thumbnail={p.thumbnail_url} />
-                          ) : hasDrive && !p.thumbnail_url ? (
-                           <GDriveEmbed url={p.gdrive_url} title={p.title} />
+                          ) : hasDrive ? (
+                           <GDriveEmbed url={p.gdrive_url} title={p.title} thumbnail={p.thumbnail_url} />
                           ) : p.thumbnail_url ? (
                             <div className="aspect-video w-full overflow-hidden" style={{ background: "var(--bg-3)" }}>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
