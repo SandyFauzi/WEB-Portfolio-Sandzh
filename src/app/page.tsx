@@ -2,7 +2,19 @@ import { createClient } from "@/lib/supabase-server";
 import ThemeToggle from "@/components/ThemeToggle";
 import WakaStats from "@/components/WakaStats";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import { createClient } from "@/lib/supabase-server";
+import ThemeToggle from "@/components/ThemeToggle";
+import WakaStats from "@/components/WakaStats";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
 
+// --- TAMBAHKAN BARIS INI UNTUK MEMATIKAN CACHE BASI ---
+export const dynamic = "force-dynamic";
+
+function Label({ children }: { children: React.ReactNode }) {
+  return <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">{children}</span>;
+}
+
+// ... (kode ke bawahnya tetap sama biarkan saja)
 function Label({ children }: { children: React.ReactNode }) {
   return <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">{children}</span>;
 }
