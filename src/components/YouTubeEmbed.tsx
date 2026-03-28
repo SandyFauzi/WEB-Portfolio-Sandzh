@@ -16,14 +16,24 @@ function getYouTubeId(url: string): string | null {
   return null;
 }
 
-export default function YouTubeEmbed({ url, title }: { url: string; title: string }) {
+export default function YouTubeEmbed({
+  url,
+  title,
+  thumbnail,
+}: {
+  url: string;
+  title: string;
+  thumbnail?: string | null;
+}) {
   const [playing, setPlaying] = useState(false);
   const [thumbErr, setThumbErr] = useState(false);
   const videoId = getYouTubeId(url);
   if (!videoId) return null;
 
-  // Fallback: maxresdefault → hqdefault
-  const thumb = thumbErr
+  // Prioritas: thumbnail Supabase → maxresdefault → hqdefault
+  const thumb = thumbnail
+    ? thumbnail
+    : thumbErr
     ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
     : `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
@@ -43,10 +53,9 @@ export default function YouTubeEmbed({ url, title }: { url: string; title: strin
           <img
             src={thumb}
             alt={title}
-            onError={() => setThumbErr(true)}
+            onError={() => { if (!thumbnail) setThumbErr(true); }}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
-
           <div
             className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             style={{ background: "rgba(0,0,0,0.4)" }}>
@@ -57,7 +66,6 @@ export default function YouTubeEmbed({ url, title }: { url: string; title: strin
               </svg>
             </div>
           </div>
-
           <div className="absolute bottom-2 left-2 rounded px-1.5 py-0.5 font-mono text-[9px] text-white transition-opacity duration-300 group-hover:opacity-0"
             style={{ background: "rgba(0,0,0,0.6)" }}>
             YouTube
