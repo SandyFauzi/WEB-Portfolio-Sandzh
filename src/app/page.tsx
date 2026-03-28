@@ -11,9 +11,6 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 // ... (kode ke bawahnya tetap sama biarkan saja)
-function Label({ children }: { children: React.ReactNode }) {
-  return <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">{children}</span>;
-}
 function Divider() {
   return <div className="w-full border-t" style={{ borderColor: "var(--border)" }} />;
 }
