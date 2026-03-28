@@ -345,7 +345,7 @@ export default async function HomePage() {
                       return (
                         <div key={p.id} className="group overflow-hidden rounded-2xl bg-card border-dim transition hover:border-dim-hover">
                           {hasYT ? (
-                            <YouTubeEmbed url={p.external_url!} title={p.title} />
+                           <YouTubeEmbed url={p.external_url!} title={p.title} thumbnail={p.thumbnail_url} />
                           ) : p.thumbnail_url ? (
                             <div className="aspect-video w-full overflow-hidden" style={{ background: "var(--bg-3)" }}>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
