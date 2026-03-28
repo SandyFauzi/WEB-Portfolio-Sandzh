@@ -2,10 +2,6 @@ import { createClient } from "@/lib/supabase-server";
 import ThemeToggle from "@/components/ThemeToggle";
 import WakaStats from "@/components/WakaStats";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
-import { createClient } from "@/lib/supabase-server";
-import ThemeToggle from "@/components/ThemeToggle";
-import WakaStats from "@/components/WakaStats";
-import YouTubeEmbed from "@/components/YouTubeEmbed";
 
 // --- TAMBAHKAN BARIS INI UNTUK MEMATIKAN CACHE BASI ---
 export const dynamic = "force-dynamic";
