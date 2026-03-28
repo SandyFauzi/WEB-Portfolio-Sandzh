@@ -22,8 +22,8 @@ export default function EditProjectPage() {
   const [form, setForm] = useState({
     title: "", description: "", category: "video_editing",
     tags: "", external_url: "", featured: false, sort_order: 0,
+    external_thumb_url: "", // <-- Fitur External Link Thumbnail
   });
-  const [currentThumb, setCurrentThumb] = useState<string | null>(null);
   const [thumbFile, setThumbFile]       = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState<string>("");
   const [loading, setLoading]           = useState(false);
@@ -42,8 +42,8 @@ export default function EditProjectPage() {
           external_url: data.external_url ?? "",
           featured:     data.featured,
           sort_order:   data.sort_order,
+          external_thumb_url: data.thumbnail_url ?? "", // Isi form dengan URL thumbnail yang tersimpan
         });
-        setCurrentThumb(data.thumbnail_url);
       }
       setFetching(false);
     }
@@ -63,6 +63,8 @@ export default function EditProjectPage() {
     if (!file) return;
     setThumbFile(file);
     setThumbPreview(URL.createObjectURL(file));
+    // Kosongkan URL text jika user milih file baru
+    setForm(prev => ({ ...prev, external_thumb_url: "" }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -71,7 +73,7 @@ export default function EditProjectPage() {
     setError("");
 
     try {
-      let thumbnail_url = currentThumb;
+      let thumbnail_url = form.external_thumb_url || null;
 
       if (thumbFile) {
         const ext  = thumbFile.name.split(".").pop();
@@ -113,7 +115,7 @@ export default function EditProjectPage() {
     </div>
   );
 
-  const displayThumb = thumbPreview || currentThumb;
+  const displayThumb = thumbPreview || form.external_thumb_url;
 
   return (
     <div className="p-8">
@@ -127,35 +129,45 @@ export default function EditProjectPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Thumbnail */}
-          <div>
-            <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>
-              Thumbnail
+          {/* Thumbnail Box */}
+          <div className="rounded-xl p-5" style={{ border: "1px solid var(--border)", background: "var(--bg-2)" }}>
+            <label className="mb-3 block font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>
+              Thumbnail Project
             </label>
-            {displayThumb ? (
-              <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-xl" style={{ background: "var(--bg-3)" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={displayThumb} alt="" className="h-full w-full object-cover" />
-                <button type="button"
-                  onClick={() => { setThumbFile(null); setThumbPreview(""); setCurrentThumb(null); }}
-                  className="absolute right-2 top-2 rounded-full px-2 py-1 text-xs"
-                  style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>
-                  ✕
-                </button>
-                <label className="absolute bottom-2 right-2 cursor-pointer rounded-full px-3 py-1 text-xs"
-                  style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>
-                  Ganti
+            
+            <div className="relative mb-4">
+              {displayThumb ? (
+                <div className="relative aspect-video w-full overflow-hidden rounded-xl" style={{ background: "var(--bg-3)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={displayThumb} alt="" className="h-full w-full object-cover" />
+                  <button type="button"
+                    onClick={() => { setThumbFile(null); setThumbPreview(""); setForm(p => ({...p, external_thumb_url: ""})) }}
+                    className="absolute right-2 top-2 rounded-full px-2 py-1 text-xs"
+                    style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>
+                    ✕
+                  </button>
+                  <label className="absolute bottom-2 right-2 cursor-pointer rounded-full px-3 py-1 text-xs"
+                    style={{ background: "rgba(0,0,0,0.8)", color: "#fff" }}>
+                    Ganti File
+                    <input type="file" accept="image/*" onChange={handleThumb} className="hidden" />
+                  </label>
+                </div>
+              ) : (
+                <label className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center rounded-xl transition hover:opacity-70"
+                  style={{ background: "var(--bg-3)", border: "2px dashed var(--border)" }}>
+                  <span className="text-2xl" style={{ color: "var(--muted)" }}>↑</span>
+                  <span className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Upload dari komputer</span>
                   <input type="file" accept="image/*" onChange={handleThumb} className="hidden" />
                 </label>
-              </div>
-            ) : (
-              <label className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center rounded-xl transition hover:opacity-70"
-                style={{ background: "var(--bg-2)", border: "2px dashed var(--border)" }}>
-                <span className="text-2xl" style={{ color: "var(--muted)" }}>↑</span>
-                <span className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Upload thumbnail</span>
-                <input type="file" accept="image/*" onChange={handleThumb} className="hidden" />
-              </label>
-            )}
+              )}
+            </div>
+
+            {/* Input URL Eksternal */}
+            <Field label="Atau gunakan URL Link Eksternal (Cloudflare, Imgur, Flickr)">
+               <input name="external_thumb_url" value={form.external_thumb_url} onChange={handleChange} 
+                placeholder="https://.../gambar.jpg" className="input-field" disabled={!!thumbFile} />
+               {thumbFile && <p className="text-[10px] mt-1 text-yellow-500">Hapus file upload jika ingin menggunakan link eksternal.</p>}
+            </Field>
           </div>
 
           <Field label="Judul *">
