@@ -23,6 +23,7 @@ export default function NewProjectPage() {
     category:     "video_editing",
     tags:         "",
     external_url: "",
+    external_thumb_url: "", // <-- Fitur External Link Thumbnail
     featured:     false,
     sort_order:   0,
   });
@@ -44,6 +45,8 @@ export default function NewProjectPage() {
     if (!file) return;
     setThumbFile(file);
     setThumbPreview(URL.createObjectURL(file));
+    // Reset external URL kalau user pilih file dari komputer
+    setForm(prev => ({ ...prev, external_thumb_url: "" })); 
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -52,9 +55,10 @@ export default function NewProjectPage() {
     setError("");
 
     try {
-      let thumbnail_url: string | null = null;
+      // Default pakai URL eksternal (kalau ada)
+      let thumbnail_url: string | null = form.external_thumb_url || null;
 
-      // Upload thumbnail kalau ada
+      // Upload thumbnail kalau user milih file (Upload menimpa external URL)
       if (thumbFile) {
         const ext  = thumbFile.name.split(".").pop();
         const path = `thumbnails/${Date.now()}.${ext}`;
@@ -69,13 +73,11 @@ export default function NewProjectPage() {
         thumbnail_url = urlData.publicUrl;
       }
 
-      // Insert project
       const tags = form.tags
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean);
 
-      // KUNCI FIX: Menambahkan "as any" untuk mem-bypass bug tipe "never" dari Supabase
       const { error: insertErr } = await supabase.from("projects").insert({
         title:        form.title,
         description:  form.description || null,
@@ -97,10 +99,12 @@ export default function NewProjectPage() {
     }
   }
 
+  // Tampilkan preview dari file lokal ATAU link eksternal
+  const displayPreview = thumbPreview || form.external_thumb_url;
+
   return (
     <div className="p-8">
       <div className="mx-auto max-w-2xl">
-        {/* Header */}
         <div className="mb-8">
           <button onClick={() => router.back()} className="mb-4 font-mono text-[10px] uppercase tracking-[0.15em] transition hover:opacity-70"
             style={{ color: "var(--muted)" }}>
@@ -110,18 +114,19 @@ export default function NewProjectPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Thumbnail */}
-          <div>
-            <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>
-              Thumbnail
+          {/* Thumbnail Box */}
+          <div className="rounded-xl p-5" style={{ border: "1px solid var(--border)", background: "var(--bg-2)" }}>
+            <label className="mb-3 block font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>
+              Thumbnail Project
             </label>
-            <div className="relative">
-              {thumbPreview ? (
-                <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-xl"
+            
+            <div className="relative mb-4">
+              {displayPreview ? (
+                <div className="relative aspect-video w-full overflow-hidden rounded-xl"
                   style={{ background: "var(--bg-3)" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={thumbPreview} alt="" className="h-full w-full object-cover" />
-                  <button type="button" onClick={() => { setThumbFile(null); setThumbPreview(""); }}
+                  <img src={displayPreview} alt="Preview" className="h-full w-full object-cover" />
+                  <button type="button" onClick={() => { setThumbFile(null); setThumbPreview(""); setForm(p => ({...p, external_thumb_url: ""})) }}
                     className="absolute right-2 top-2 rounded-full px-2 py-1 text-xs"
                     style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>
                     ✕
@@ -129,23 +134,27 @@ export default function NewProjectPage() {
                 </div>
               ) : (
                 <label className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center rounded-xl transition hover:opacity-70"
-                  style={{ background: "var(--bg-2)", border: "2px dashed var(--border)" }}>
+                  style={{ background: "var(--bg-3)", border: "2px dashed var(--border)" }}>
                   <span className="text-2xl" style={{ color: "var(--muted)" }}>↑</span>
-                  <span className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Upload thumbnail</span>
-                  <span className="mt-1 font-mono text-[10px]" style={{ color: "var(--muted)" }}>JPG, PNG, WEBP</span>
+                  <span className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Upload dari komputer</span>
                   <input type="file" accept="image/*" onChange={handleThumb} className="hidden" />
                 </label>
               )}
             </div>
+
+            {/* Input URL Eksternal */}
+            <Field label="Atau gunakan URL Link Eksternal (Cloudflare, Imgur, Flickr)">
+               <input name="external_thumb_url" value={form.external_thumb_url} onChange={handleChange} 
+                placeholder="https://.../gambar.jpg" className="input-field" disabled={!!thumbFile} />
+               {thumbFile && <p className="text-[10px] mt-1 text-yellow-500">Hapus file upload jika ingin menggunakan link eksternal.</p>}
+            </Field>
           </div>
 
-          {/* Title */}
           <Field label="Judul *">
             <input name="title" value={form.title} onChange={handleChange} required
               placeholder="Contoh: JJK VFX 3D" className="input-field" />
           </Field>
 
-          {/* Category */}
           <Field label="Kategori *">
             <select name="category" value={form.category} onChange={handleChange} className="input-field">
               {CATEGORIES.map((c) => (
@@ -154,25 +163,21 @@ export default function NewProjectPage() {
             </select>
           </Field>
 
-          {/* Description */}
           <Field label="Deskripsi">
             <textarea name="description" value={form.description} onChange={handleChange} rows={3}
               placeholder="Deskripsi singkat project..." className="input-field resize-none" />
           </Field>
 
-          {/* Tags */}
           <Field label="Tags" hint="Pisahkan dengan koma">
             <input name="tags" value={form.tags} onChange={handleChange}
               placeholder="Blender, After Effects, VFX" className="input-field" />
           </Field>
 
-          {/* External URL */}
           <Field label="Link eksternal (YouTube, Instagram, dll)">
             <input name="external_url" value={form.external_url} onChange={handleChange}
               type="url" placeholder="https://youtu.be/..." className="input-field" />
           </Field>
 
-          {/* Sort order & Featured */}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Urutan tampil">
               <input name="sort_order" value={form.sort_order} onChange={handleChange}
