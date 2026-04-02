@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+// Memaksa Next.js untuk selalu mengambil data terbaru (tanpa cache)
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const key = process.env.WAKATIME_API_KEY;
   if (!key) return NextResponse.json({ total_seconds_last_year: 0, daily_average: 0, languages: [], best_day: null });
@@ -32,7 +35,10 @@ export async function GET() {
         date: best.range.date,
         total_seconds: best.grand_total.total_seconds,
       } : null,
-    }, { headers: { "Cache-Control": "s-maxage=3600" } });
+    }, { 
+      // Mengubah header agar browser/CDN tidak menyimpan cache
+      headers: { "Cache-Control": "no-store, max-age=0" } 
+    });
 
   } catch {
     return NextResponse.json({ total_seconds_last_year: 0, daily_average: 0, languages: [], best_day: null });
