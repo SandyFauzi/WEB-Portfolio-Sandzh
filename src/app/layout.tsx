@@ -6,7 +6,7 @@ const syne = Syne({ subsets:["latin"], variable:"--font-sans", weight:["400","50
 const spaceMono = Space_Mono({ subsets:["latin"], variable:"--font-mono", weight:["400","700"] });
 
 export const metadata: Metadata = {
-  title: "Sandzh — Portfolio",
+  title: "Sandzh Portfolio",
   description: "Video Editor, Graphic Designer, and 3D VFX Artist.",
   icons: {
     icon: [
