@@ -45,8 +45,12 @@ export default function SkillsPage() {
     if (!newSkill.name.trim()) return;
     setSaving("new");
     
+    // Otomatis assign sort_order ke urutan paling bawah
+    const orderIndex = skills.length > 0 ? Math.max(...skills.map(s => s.sort_order)) + 1 : 1;
+    const skillToInsert = { ...newSkill, sort_order: orderIndex };
+    
     // @ts-ignore
-    const { data } = await supabase.from("skills").insert(newSkill).select().single();
+    const { data } = await supabase.from("skills").insert(skillToInsert).select().single();
     
     if (data) setSkills((prev) => [...prev, data]);
     setNewSkill({ name: "", percentage: 80, category: "creative", sort_order: 0 });
@@ -58,6 +62,36 @@ export default function SkillsPage() {
     setSkills((prev) =>
       prev.map((s) => s.id === id ? { ...s, [field]: field === "percentage" || field === "sort_order" ? Number(value) : value } : s)
     );
+  }
+
+  // Fungsi baru untuk memindahkan urutan (Tukar posisi)
+  async function moveSkill(index: number, direction: "up" | "down") {
+    if (direction === "up" && index === 0) return;
+    if (direction === "down" && index === skills.length - 1) return;
+
+    const newSkills = [...skills];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+    const currentSkill = newSkills[index];
+    const targetSkill = newSkills[targetIndex];
+
+    // Tukar nilai sort_order
+    const tempOrder = currentSkill.sort_order;
+    currentSkill.sort_order = targetSkill.sort_order;
+    targetSkill.sort_order = tempOrder;
+
+    // Tukar posisi di array agar UI langsung update
+    newSkills[index] = targetSkill;
+    newSkills[targetIndex] = currentSkill;
+    
+    setSkills(newSkills);
+
+    // Update kedua baris di database
+    // @ts-ignore
+    await Promise.all([
+      supabase.from("skills").update({ sort_order: currentSkill.sort_order }).eq("id", currentSkill.id),
+      supabase.from("skills").update({ sort_order: targetSkill.sort_order }).eq("id", targetSkill.id)
+    ]);
   }
 
   if (loading) return (
@@ -81,7 +115,7 @@ export default function SkillsPage() {
           </button>
         </div>
 
-        {/* Add form */}
+        {/* Add form (Tetap sama) */}
         {adding && (
           <div className="mb-6 rounded-2xl p-5 space-y-4"
             style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
@@ -117,7 +151,7 @@ export default function SkillsPage() {
 
         {/* Skills list */}
         <div className="space-y-2">
-          {skills.map((s) => (
+          {skills.map((s, index) => (
             <div key={s.id} className="rounded-xl p-4 space-y-3"
               style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
               <div className="grid grid-cols-2 gap-3">
@@ -134,18 +168,37 @@ export default function SkillsPage() {
                   className="flex-1" />
                 <span className="w-12 text-right font-mono text-sm" style={{ color: "var(--muted)" }}>{s.percentage}%</span>
               </div>
-              <div className="flex justify-end gap-2">
-                <button onClick={() => updateSkill(s)} disabled={saving === s.id}
-                  className="rounded-lg px-4 py-1.5 text-xs font-medium transition hover:opacity-80 disabled:opacity-40"
-                  style={{ background: "var(--text)", color: "var(--bg)" }}>
-                  {saving === s.id ? "..." : "Simpan"}
-                </button>
-                <button onClick={() => deleteSkill(s.id)}
-                  className="rounded-lg px-4 py-1.5 text-xs transition hover:opacity-70"
-                  style={{ border: "1px solid var(--border)", color: "var(--muted)" }}>
-                  Hapus
-                </button>
+              
+              <div className="flex justify-between gap-2 mt-2">
+                {/* Tombol Reorder */}
+                <div className="flex gap-1">
+                  <button onClick={() => moveSkill(index, "up")} disabled={index === 0}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium transition hover:bg-neutral-500/20 disabled:opacity-30 disabled:hover:bg-transparent"
+                    style={{ border: "1px solid var(--border)", color: "var(--text)" }} title="Pindah ke atas">
+                    ▲
+                  </button>
+                  <button onClick={() => moveSkill(index, "down")} disabled={index === skills.length - 1}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium transition hover:bg-neutral-500/20 disabled:opacity-30 disabled:hover:bg-transparent"
+                    style={{ border: "1px solid var(--border)", color: "var(--text)" }} title="Pindah ke bawah">
+                    ▼
+                  </button>
+                </div>
+                
+                {/* Tombol Aksi */}
+                <div className="flex gap-2">
+                  <button onClick={() => updateSkill(s)} disabled={saving === s.id}
+                    className="rounded-lg px-4 py-1.5 text-xs font-medium transition hover:opacity-80 disabled:opacity-40"
+                    style={{ background: "var(--text)", color: "var(--bg)" }}>
+                    {saving === s.id ? "..." : "Simpan"}
+                  </button>
+                  <button onClick={() => deleteSkill(s.id)}
+                    className="rounded-lg px-4 py-1.5 text-xs transition hover:opacity-70"
+                    style={{ border: "1px solid var(--border)", color: "var(--muted)" }}>
+                    Hapus
+                  </button>
+                </div>
               </div>
+
             </div>
           ))}
         </div>
