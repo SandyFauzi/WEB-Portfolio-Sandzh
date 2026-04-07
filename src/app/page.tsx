@@ -4,7 +4,7 @@ import WakaStats from "@/components/WakaStats";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import GDriveEmbed from "@/components/GDriveEmbed";
 
-// --- MEMATIKAN CACHE BASI SUPAYA GAMBAR FLICKR/CLOUDFLARE LANGSUNG MUNCUL ---
+// --- DISABLE STALE CACHE SO FLICKR/CLOUDFLARE IMAGES APPEAR IMMEDIATELY ---
 export const dynamic = "force-dynamic";
 
 function Label({ children }: { children: React.ReactNode }) {
@@ -32,8 +32,8 @@ const DEFAULT_SOFTWARE = [
 ];
 
 const DEFAULT_EXP = [
-  { year: "2023 - 2024", title: "Ketua Divisi PDD", org: "BEM Kema UNPAD", link_label: "Lihat Aftermovie", link: "#" },
-  { year: "2022", title: "Staff Dekorasi & Dokumentasi", org: "Kepanitiaan Fakultas", link_label: "Poster Project", link: "#" },
+  { year: "2023 - 2024", title: "Head of PDD Division", org: "BEM Kema UNPAD", link_label: "Watch Aftermovie", link: "#" },
+  { year: "2022", title: "Decoration & Documentation Staff", org: "Faculty Committee", link_label: "Poster Project", link: "#" },
 ];
 
 function isYouTubeUrl(url: string) {
@@ -54,20 +54,20 @@ export default async function HomePage() {
 
   const name    = about?.full_name ?? "Sandy Fauzi Amrulloh";
   const tagline = about?.tagline   ?? "Video Editor · Graphic Design · 3D VFX Artist";
-  const bio     = about?.bio       ?? "Freelance video editor dan graphic designer dengan background Fisika UNPAD dan Teknik Elektronika.";
+  const bio     = about?.bio       ?? "Freelance video editor and graphic designer with a background in Physics at UNPAD and Electronics Engineering.";
   
   const socials = (about?.socials ?? {}) as any;
 
   const infoArray = (Array.isArray(socials.info) && socials.info.length > 0) ? socials.info : [
-    { label: "Universitas", value: "UNPAD" },
-    { label: "Jurusan",     value: "Fisika" },
-    { label: "Fokus",       value: "Creative Tech" },
-    { label: "Status",      value: "Freelance" },
+    { label: "University", value: "UNPAD" },
+    { label: "Major",      value: "Physics" },
+    { label: "Focus",      value: "Creative Tech" },
+    { label: "Status",     value: "Freelance" },
   ];
 
   const eduArray = (Array.isArray(socials.education) && socials.education.length > 0) ? socials.education : [
-    { year: "2024 –",      place: "Universitas Padjadjaran", note: "S1 Fisika" },
-    { year: "2021 – 24",   place: "SMKN 1 Sumedang",        note: "Teknik Elektronika" },
+    { year: "2024 –",      place: "Universitas Padjadjaran", note: "BSc Physics" },
+    { year: "2021 – 24",   place: "SMKN 1 Sumedang",        note: "Electronics Engineering" },
     { year: "2018 – 21",   place: "SMPN 1 Sumedang",        note: "" },
     { year: "2012 – 18",   place: "SD Sukamaju",             note: "" },
   ];
@@ -83,7 +83,7 @@ export default async function HomePage() {
     return acc;
   }, {});
 
-  const marqueeItems = ["Video Editing","3D VFX","Graphic Design","Physics","Blender","After Effects","Premiere Pro","Illustrator","Arduino","Python","Fisika UNPAD"];
+  const marqueeItems = ["Video Editing","3D VFX","Graphic Design","Physics","Blender","After Effects","Premiere Pro","Illustrator","Arduino","Python","Physics UNPAD"];
 
   return (
     <main className="min-h-screen">
@@ -135,9 +135,9 @@ export default async function HomePage() {
                 <a href="#work" className="group flex items-center gap-3 text-sm font-semibold">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full transition group-hover:opacity-80"
                     style={{ background: "var(--text)", color: "var(--bg)" }}>↓</span>
-                  Lihat karya
+                  View works
                 </a>
-                <a href="#contact" className="text-sm text-muted transition hover:opacity-70">Hubungi →</a>
+                <a href="#contact" className="text-sm text-muted transition hover:opacity-70">Contact →</a>
               </div>
             </div>
 
@@ -152,7 +152,7 @@ export default async function HomePage() {
                   ) : (
                     <div className="flex h-full flex-col items-center justify-center gap-2">
                       <span className="text-4xl opacity-20">◻</span>
-                      <p className="font-mono text-[10px] text-muted">Upload foto di admin</p>
+                      <p className="font-mono text-[10px] text-muted">Upload photo in admin</p>
                     </div>
                   )}
                 </div>
@@ -223,7 +223,7 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-1 gap-14 md:grid-cols-2">
             <div>
-              <h2 className="mb-5 text-4xl font-bold leading-tight">Fisika &<br />Kreativitas</h2>
+              <h2 className="mb-5 text-4xl font-bold leading-tight">Physics &<br />Creativity</h2>
               <p className="leading-relaxed text-muted">{bio}</p>
               
               <div className="mt-8 grid grid-cols-2 gap-3">
@@ -237,7 +237,7 @@ export default async function HomePage() {
             </div>
             
             <div>
-              <Label>Pendidikan</Label>
+              <Label>Education</Label>
               <div className="mt-5">
                 {eduArray.map((e: any, i: number) => (
                   <div key={i} className="flex gap-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
@@ -325,9 +325,9 @@ export default async function HomePage() {
 
           {Object.keys(grouped).length === 0 ? (
             <div className="rounded-2xl p-12 text-center border-dim">
-              <p className="text-sm text-muted">Belum ada project —</p>
+              <p className="text-sm text-muted">No projects yet —</p>
               <a href="/admin" className="mt-2 inline-block text-xs underline underline-offset-4 text-muted hover:opacity-70">
-                tambahkan lewat admin panel →
+                add via admin panel →
               </a>
             </div>
           ) : (
@@ -345,7 +345,7 @@ export default async function HomePage() {
                       return (
                         <div key={p.id} className="group overflow-hidden rounded-2xl bg-card border-dim transition hover:border-dim-hover">
                           
-                          {/* Logika Media Thumbnail / Embed yang Diperbaiki */}
+                          {/* Improved Media Thumbnail / Embed Logic */}
                           {hasYT ? (
                            <YouTubeEmbed url={p.external_url!} title={p.title} thumbnail={p.thumbnail_url} />
                           ) : hasDrive ? (
@@ -391,7 +391,7 @@ export default async function HomePage() {
                                   <a href={p.external_url} target="_blank" rel="noreferrer"
                                     className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition hover:opacity-80"
                                     style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
-                                    Lihat ↗
+                                    View ↗
                                   </a>
                                 )}
                               </div>
@@ -419,9 +419,9 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
             <div>
-              <h2 className="mb-3 text-3xl font-bold">Jam Terbang<br />Coding</h2>
+              <h2 className="mb-3 text-3xl font-bold">Coding<br />Hours</h2>
               <p className="text-sm leading-relaxed text-muted">
-                Auto-tracked oleh WakaTime dari VSCode — setiap file yang dibuka tercatat otomatis.
+                Auto-tracked by WakaTime from VSCode — every opened file is recorded automatically.
               </p>
             </div>
             <WakaStats />
@@ -442,7 +442,7 @@ export default async function HomePage() {
             <div>
               <h2 className="text-4xl font-bold leading-tight">Let&apos;s work<br />together.</h2>
               <p className="mt-4 text-sm leading-relaxed text-muted">
-                Butuh video editor, graphic designer, atau kolaborasi project kreatif?
+                Need a video editor, graphic designer, or creative project collaboration?
               </p>
             </div>
             <div>
